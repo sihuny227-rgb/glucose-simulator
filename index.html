@@ -1,0 +1,1959 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>혈당 조절 시뮬레이터</title>
+<meta name="description" content="식사·공복·단백질 식사·운동 때의 혈당 조절을 정상인·제2형·제1형 당뇨병으로 비교하고, 당뇨약 10종의 작용을 움직이는 몸속 지도로 보여주는 학습용 시뮬레이터">
+<meta property="og:title" content="혈당 조절 시뮬레이터">
+<meta property="og:description" content="인슐린·글루카곤·인크레틴·교감신경이 혈당을 맞추는 과정과 당뇨병·약물 작용을 움직이는 그림으로">
+<meta name="theme-color" content="#F2F4F6">
+<link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2032%2032%22%3E%3Cpath%20d%3D%22M26%2016%2021%2024.7H11L6%2016l5-8.7h10z%22%20fill%3D%22%23DE9F00%22%2F%3E%3C%2Fsvg%3E">
+<style>:root{color-scheme:light;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Hahmlet:wght@600;700&family=IBM+Plex+Mono:wght@500;600&family=IBM+Plex+Sans+KR:wght@400;500;600;700&display=swap">
+<style>
+/* Layout: 세로로 선 '혈액 순환 고리' 둘레에 장기를 배치한 지도(왼쪽, 넓은 화면에선 고정) + 단계 해설·혈당 곡선·호르몬 계기판(오른쪽). 좁은 화면에선 위에서 아래로 쌓는다. */
+:root{
+  --bg:#F2F4F6; --surface:#FFFFFF; --surface-2:#E9EDF1; --ink:#14223A; --ink-2:#46546B; --ink-3:#77839A; --line:#D6DCE3;
+  --accent:#0C7A70; --accent-soft:rgba(12,122,112,.10); --on-accent:#FFFFFF;
+  --blood:#C23A55; --blood-track:rgba(194,58,85,.12); --vessel:rgba(194,58,85,.17);
+  --organ:#FFFFFF; --organ-line:#C9D1DA; --glut:#56657E; --grid:rgba(20,34,58,.075);
+  --glc:#DE9F00; --ffa:#7B8A1C; --gly:#4C8A82; --lac:#D6548A; --ket:#C2561A; --aa:#7650D6; --urea:#7F8996;
+  --ins:#2D68D4; --gcg:#D93A33; --inc:#1C9852; --epi:#B8319C; --rx:#0E8277; --on-rx:#FFFFFF;
+  --f-display:"Hahmlet","Nanum Myeongjo","AppleMyungjo",serif;
+  --f-body:"IBM Plex Sans KR","Apple SD Gothic Neo","Malgun Gothic","Noto Sans KR",sans-serif;
+  --f-mono:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0B111D; --surface:#121A29; --surface-2:#1A2436; --ink:#E6EBF3; --ink-2:#AFBACB; --ink-3:#7E8AA0; --line:#263248;
+    --accent:#3FC1B1; --accent-soft:rgba(63,193,177,.13); --on-accent:#05211D;
+    --blood:#EE6A84; --blood-track:rgba(238,106,132,.13); --vessel:rgba(238,106,132,.2);
+    --organ:#121A29; --organ-line:#2C3850; --glut:#9AAAC4; --grid:rgba(230,235,243,.06);
+    --glc:#F4BF3A; --ffa:#BCCB45; --gly:#7EC4BB; --lac:#F48DB8; --ket:#EE8A4A; --aa:#A98CFF; --urea:#A3ADBB;
+    --ins:#6E9EFF; --gcg:#FF6E64; --inc:#4FD08A; --epi:#E36BD0; --rx:#41C6B6; --on-rx:#05211D;
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0B111D; --surface:#121A29; --surface-2:#1A2436; --ink:#E6EBF3; --ink-2:#AFBACB; --ink-3:#7E8AA0; --line:#263248;
+  --accent:#3FC1B1; --accent-soft:rgba(63,193,177,.13); --on-accent:#05211D;
+  --blood:#EE6A84; --blood-track:rgba(238,106,132,.13); --vessel:rgba(238,106,132,.2);
+  --organ:#121A29; --organ-line:#2C3850; --glut:#9AAAC4; --grid:rgba(230,235,243,.06);
+  --glc:#F4BF3A; --ffa:#BCCB45; --gly:#7EC4BB; --lac:#F48DB8; --ket:#EE8A4A; --aa:#A98CFF; --urea:#A3ADBB;
+  --ins:#6E9EFF; --gcg:#FF6E64; --inc:#4FD08A; --epi:#E36BD0; --rx:#41C6B6; --on-rx:#05211D;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html,body{background:var(--bg)}
+body{color:var(--ink);font-family:var(--f-body);font-size:15px;line-height:1.65;-webkit-font-smoothing:antialiased;word-break:keep-all;overflow-wrap:break-word}
+.wrap{max-width:1200px;margin:0 auto;padding-block:26px 56px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+button{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+/* header */
+.top{display:grid;gap:6px;margin-bottom:18px}
+.eyebrow{font-size:12px;letter-spacing:.09em;color:var(--accent);font-weight:600}
+h1{font-family:var(--f-display);font-weight:700;font-size:clamp(27px,3.6vw,38px);line-height:1.2;margin:0;letter-spacing:-.01em;text-wrap:balance}
+.lede{max-width:64ch;color:var(--ink-2);margin:2px 0 0}
+
+/* scenario switch */
+.tabs{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px;margin-bottom:20px}
+.tab.rxtab{background:color-mix(in srgb,var(--rx) 7%,var(--surface))}
+.tab.rxtab svg{stroke:var(--rx)}
+.tab{display:grid;grid-template-columns:auto minmax(0,1fr);column-gap:11px;align-items:center;text-align:left;padding:11px 13px;border-radius:14px;border:1px solid var(--line);background:var(--surface);cursor:pointer;transition:border-color .2s,box-shadow .2s}
+.tab:hover{border-color:var(--ink-3)}
+.tab svg{grid-row:1/3;width:30px;height:30px;fill:none;stroke:var(--ink-3);stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+.tab-t{font-weight:600;font-size:15px;line-height:1.35}
+.tab-s{font-size:12px;color:var(--ink-3);line-height:1.35}
+.tab[aria-pressed="true"]{border-color:var(--accent);box-shadow:inset 0 0 0 1px var(--accent)}
+.tab[aria-pressed="true"] svg{stroke:var(--accent)}
+@media (max-width:1000px){.tabs{grid-template-columns:repeat(4,minmax(0,1fr))}.tab.rxtab{grid-column:1/-1}}
+@media (max-width:720px){.tabs{grid-template-columns:repeat(2,minmax(0,1fr))}.tab{padding:10px 11px}.tab svg{width:26px;height:26px}}
+
+/* drug mode */
+.rxbar{display:flex;align-items:center;justify-content:space-between;gap:8px 12px;flex-wrap:wrap;margin-bottom:10px}
+.rxbar-t{font-size:12.5px;color:var(--ink-2);font-weight:600}
+.seg{display:inline-flex;padding:3px;border-radius:12px;background:var(--surface-2);gap:2px}
+.seg button{border:0;background:none;padding:7px 13px;border-radius:9px;font-size:13px;font-weight:600;color:var(--ink-2);cursor:pointer}
+.seg button[aria-pressed="true"]{background:var(--surface);color:var(--ink);box-shadow:0 1px 3px rgba(20,34,58,.14)}
+.seg button[data-v="1"][aria-pressed="true"]{background:var(--rx);color:var(--on-rx)}
+.seg.dmseg button[data-v="t2"][aria-pressed="true"]{background:color-mix(in srgb,var(--gcg) 16%,var(--surface));color:var(--gcg);box-shadow:inset 0 0 0 1.5px var(--gcg)}
+.seg.dmseg button[data-v="t1"][aria-pressed="true"]{background:color-mix(in srgb,var(--ket) 16%,var(--surface));color:var(--ket);box-shadow:inset 0 0 0 1.5px var(--ket)}
+.seg.dmseg button{padding:7px 11px}
+.t2note.t1{background:color-mix(in srgb,var(--ket) 9%,var(--surface));box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--ket) 34%,transparent)}
+.t2note.t1 b{color:var(--ket)}
+.c-line.t1{stroke:var(--ket)}
+#chart.t1 .c-mk .dt{stroke:var(--ket)}
+#chart.t1 .c-mk.on .dt{fill:var(--ket)}
+.ck i.t1k{border-top:2.4px solid var(--ket)}
+#cmp tr.dmrow.t1row th{color:var(--ket)}
+#cell-beta.dead circle.c{fill:var(--surface-2);stroke:var(--ink-3);stroke-dasharray:3 2.5}
+#cell-beta.dead text{fill:var(--ink-3)}
+#beta-x{opacity:0;transition:opacity .5s;stroke:var(--ink-3);stroke-width:1.8;stroke-linecap:round}
+#beta-x.on{opacity:.9}
+.t2note{margin-top:14px;padding:12px 14px;border-radius:12px;background:color-mix(in srgb,var(--gcg) 8%,var(--surface));box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--gcg) 30%,transparent)}
+.t2note b{display:block;font-size:12px;color:var(--gcg);font-weight:700;margin-bottom:3px;letter-spacing:.02em}
+.t2note p{margin:0;font-size:14px;color:var(--ink);line-height:1.62}
+.c-line.dm{stroke:var(--gcg)}
+#chart.dm .c-mk .dt{stroke:var(--gcg)}
+#chart.dm .c-mk.on .dt{fill:var(--gcg)}
+.ck i.dmk{border-top:2.4px solid var(--gcg)}
+#cmp tr.dmrow th{color:var(--gcg)}
+.rx-tag rect.b{fill:var(--rx)}
+.rx-tag rect.ring{fill:none;stroke:var(--rx);stroke-width:1.4;animation:tagp 1.8s ease-out infinite;transform-box:fill-box;transform-origin:center}
+.rx-tag text{font-size:10px;font-weight:700;fill:var(--on-rx)}
+.rx-tag .cap1{fill:var(--on-rx)} .rx-tag .cap2{fill:none;stroke:var(--on-rx);stroke-width:1}
+@keyframes tagp{0%{opacity:.9;transform:scale(1)}100%{opacity:0;transform:scale(1.18,1.6)}}
+.dots.rxmode{flex:1 1 100%;min-width:0;margin-left:0}
+.dots.rxmode .dot{width:auto;padding:0 11px;border-radius:999px;font:600 12px/1 var(--f-body);height:30px}
+.rx-prod{margin:0 0 12px;font-size:12.5px;color:var(--ink-2);line-height:1.55;background:var(--surface-2);border-radius:10px;padding:8px 11px}
+.rx-prod b{display:block;color:var(--rx);font-weight:700;font-size:11.5px;margin-bottom:1px}
+.rx-facts{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin:0 0 14px}
+.rx-facts div{background:var(--surface);border-radius:12px;padding:9px 11px}
+.rx-facts dt{font-size:11px;color:var(--ink-3);font-weight:600}
+.rx-facts dd{margin:2px 0 0;font-size:13.5px;font-weight:700;color:var(--ink)}
+.ck{display:inline-flex;align-items:center;gap:5px;margin-left:10px;font-weight:500;color:var(--ink-3)}
+.ck i{display:inline-block;width:16px;height:0;border-top:2.4px solid var(--rx)}
+.ck i.t2{border-top:2px dashed var(--gcg)}
+.ck i.nm{border-top:1.6px solid var(--ink-3)}
+.c-norm{fill:none;stroke:var(--ink-3);stroke-width:1.5;opacity:.55}
+.c-t2{fill:none;stroke:var(--gcg);stroke-width:2;stroke-dasharray:5 4;transition:opacity .4s,stroke-width .4s}
+.c-rx{fill:none;stroke:var(--rx);stroke-width:2.6;stroke-linecap:round;transition:opacity .4s,stroke-width .4s}
+.c-dim{opacity:.35}
+.c-now{stroke:var(--surface);stroke-width:2}
+
+/* main grid */
+.main{display:grid;grid-template-columns:440px minmax(0,1fr);gap:28px;align-items:start}
+.map-col{position:sticky;top:12px;min-width:0}
+@media (max-width:960px){.main{grid-template-columns:minmax(0,1fr)}.map-col{position:static;max-width:440px;width:100%;margin:0 auto}}
+
+.map{position:relative;width:100%;aspect-ratio:440/640;border-radius:20px;overflow:hidden;background-color:var(--surface);background-image:radial-gradient(var(--grid) 1px,transparent 1.3px);background-size:14px 14px;box-shadow:0 0 0 1px var(--line)}
+.map svg,.map canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
+.map canvas{pointer-events:none}
+
+/* map svg */
+.vessels line{stroke:var(--vessel);stroke-width:12;stroke-linecap:round}
+.track{fill:none;stroke:var(--blood-track);stroke-width:24}
+.track-flow{fill:none;stroke:var(--blood);stroke-opacity:.42;stroke-width:1.4;stroke-dasharray:2 10;animation:flow 3s linear infinite}
+@keyframes flow{to{stroke-dashoffset:-300}}
+.chev path{fill:none;stroke:var(--blood);stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;opacity:.75}
+.in-label{font-size:10.5px;fill:var(--ink-3);text-anchor:middle;letter-spacing:.04em}
+.nerve path{fill:none;stroke:var(--epi);stroke-width:1.6;stroke-dasharray:3 5;opacity:0;transition:opacity .6s}
+.nerve text{font-size:10px;fill:var(--epi);font-weight:600;opacity:0;transition:opacity .6s}
+#nv-vagus path{stroke:var(--ink-2)} #nv-vagus text{fill:var(--ink-2)}
+.nerve.on path{opacity:.9;animation:nflow 1.1s linear infinite}
+.nerve.on text{opacity:1}
+@keyframes nflow{to{stroke-dashoffset:-16}}
+.ro-label{font-size:12px;fill:var(--ink-3);text-anchor:middle;font-weight:600}
+.ro-num{font-family:var(--f-mono);font-size:38px;font-weight:600;fill:var(--ink);text-anchor:middle;font-variant-numeric:tabular-nums}
+.ro-unit{font-family:var(--f-mono);font-size:11px;fill:var(--ink-3);text-anchor:middle}
+.ro-state{font-size:11px;fill:var(--ink-2);text-anchor:middle;font-weight:600}
+.ro-hex{fill:var(--glc)}
+
+.organ{transition:opacity .5s}
+.organ.dim{opacity:.4}
+.o-box{fill:var(--organ);stroke:var(--organ-line);stroke-width:1.2;transition:stroke .4s,stroke-width .4s}
+.organ.focus .o-box{stroke:var(--accent);stroke-width:2.2}
+.o-name{font-weight:700;font-size:14.5px;fill:var(--ink)}
+.o-cap{font-size:9.5px;fill:var(--ink-3)}
+.o-mini{font-size:9.5px;fill:var(--ink-3)}
+.o-st{font-size:11.5px;fill:var(--ink-2);font-weight:500}
+.o-st.l0{fill:var(--ink);font-weight:600}
+.o-st.chg{animation:stchg 1.4s ease-out}
+@keyframes stchg{0%{fill:var(--accent)}60%{fill:var(--accent)}}
+.cell circle.c{stroke-width:1.5}
+.cell text{font-size:12px;font-weight:700;text-anchor:middle}
+.cell{transform-box:fill-box;transform-origin:center}
+#cell-beta circle.c{fill:color-mix(in srgb,var(--ins) 16%,var(--organ));stroke:var(--ins)} #cell-beta text{fill:var(--ins)}
+#cell-alpha circle.c{fill:color-mix(in srgb,var(--gcg) 16%,var(--organ));stroke:var(--gcg)} #cell-alpha text{fill:var(--gcg)}
+#cell-delta circle.c{fill:var(--surface-2);stroke:var(--ink-3)} #cell-delta text{fill:var(--ink-3);font-size:9.5px}
+.halo{opacity:0}
+.gut-tube{fill:none;stroke:var(--surface-2);stroke-width:11;stroke-linecap:round}
+.gut-tube2{fill:none;stroke:var(--organ-line);stroke-width:1;stroke-dasharray:2 3}
+.kl circle.c{fill:var(--organ);stroke:var(--inc);stroke-width:1.4}
+.kl text{font-size:8.5px;font-weight:700;fill:var(--inc);text-anchor:middle}
+.food{opacity:0;transition:opacity .6s}
+.food.on{opacity:1}
+.f-bowl,.f-egg{fill:var(--surface-2);stroke:var(--ink-2);stroke-width:1.2}
+.f-rice{fill:var(--organ);stroke:var(--ink-3);stroke-width:1}
+.f-steam{fill:none;stroke:var(--ink-3);stroke-width:1.1;stroke-linecap:round}
+.f-meat{fill:color-mix(in srgb,var(--aa) 30%,var(--organ));stroke:var(--aa);stroke-width:1.2}
+.cell-rect{fill:var(--surface-2);stroke:var(--organ-line);stroke-width:1}
+.stripe{stroke:var(--organ-line);stroke-width:1.2}
+.glut{fill:var(--glut);opacity:.5;transition:opacity .8s}
+.gluts{transition:transform 1.4s cubic-bezier(.3,.7,.2,1)}
+.gluts.open .glut{opacity:1}
+.glyco circle{fill:var(--glc);opacity:.12;transition:opacity .5s}
+.glyco circle.on{opacity:.95}
+#droplet{transform-box:fill-box;transform-origin:center;transition:transform 1.6s ease}
+#droplet circle{fill:color-mix(in srgb,var(--ffa) 22%,var(--organ));stroke:var(--ffa);stroke-width:1.2}
+.kid{fill:var(--surface-2);stroke:var(--organ-line);stroke-width:1.2}
+.adr{fill:color-mix(in srgb,var(--epi) 22%,var(--organ));stroke:var(--epi);stroke-width:1.2}
+.brainic{fill:var(--surface-2);stroke:var(--organ-line);stroke-width:1.2}
+.brainic2{fill:none;stroke:var(--organ-line);stroke-width:1.1;stroke-linecap:round}
+
+/* controls */
+.ctrl{display:flex;align-items:center;gap:8px;margin-top:12px;flex-wrap:wrap}
+.ib{width:40px;height:40px;border-radius:12px;border:1px solid var(--line);background:var(--surface);display:grid;place-items:center;cursor:pointer}
+.ib:hover{border-color:var(--ink-3)}
+.ib:disabled{opacity:.4;cursor:default}
+.ib svg,.play svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.play{height:40px;padding:0 16px 0 13px;border-radius:12px;border:0;background:var(--accent);color:var(--on-accent);font-weight:600;display:inline-flex;align-items:center;gap:7px;cursor:pointer;white-space:nowrap}
+.play svg{fill:currentColor;stroke:none}
+.dots{display:flex;gap:5px;flex-wrap:wrap;margin-left:auto}
+.dot{width:28px;height:28px;border-radius:50%;border:1px solid var(--line);background:var(--surface);color:var(--ink-3);font:600 12px/1 var(--f-mono);cursor:pointer;padding:0}
+.dot.done{color:var(--ink);border-color:var(--ink-3)}
+.dot.on{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.prog{height:3px;background:var(--surface-2);border-radius:3px;margin-top:10px;overflow:hidden}
+.prog i{display:block;height:100%;width:0;background:var(--accent)}
+.map-note{font-size:12px;color:var(--ink-3);margin:8px 0 0;line-height:1.5}
+
+/* panel */
+.panel{display:grid;gap:22px;min-width:0}
+.step{background:var(--surface);border-radius:18px;padding:20px 22px 22px;box-shadow:0 0 0 1px var(--line),0 8px 28px rgba(20,34,58,.05)}
+.step-meta{display:flex;flex-wrap:wrap;gap:6px 10px;align-items:center;font-size:12.5px;color:var(--ink-3)}
+.cnt{font-family:var(--f-mono);font-weight:600;color:var(--ink-2);font-variant-numeric:tabular-nums}
+.tag{padding:2px 9px;border-radius:999px;background:var(--accent-soft);color:var(--accent);font-weight:600}
+.step h2{font-family:var(--f-display);font-size:clamp(20px,2.5vw,25px);line-height:1.4;margin:10px 0 8px;text-wrap:balance;font-weight:700}
+.step p{margin:0;color:var(--ink-2);max-width:62ch}
+.mech{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin-top:16px}
+.chip{font-size:12.5px;padding:4px 10px;border-radius:8px;background:var(--surface-2);color:var(--ink);line-height:1.45}
+.arr{color:var(--ink-3);font-size:13px}
+
+.duo{display:grid;grid-template-columns:minmax(0,1fr);gap:26px}
+@media (min-width:700px) and (max-width:960px),(min-width:1180px){.duo{grid-template-columns:minmax(0,1.2fr) minmax(0,1fr)}}
+.sec h3{font-size:12.5px;letter-spacing:.05em;color:var(--ink-3);font-weight:600;margin:0 0 10px;display:flex;justify-content:space-between;gap:8px}
+.sec h3 small{font-weight:500;letter-spacing:0}
+#chart{width:100%;height:auto;display:block}
+.c-band{fill:var(--accent-soft)}
+.c-shade{fill:var(--epi);opacity:.07}
+.c-grid{stroke:var(--line);stroke-dasharray:3 3}
+.c-tick{stroke:var(--ink-3)}
+.c-y,.c-x{font-family:var(--f-mono);font-size:10px;fill:var(--ink-3)}
+.c-note{font-size:9.5px;fill:var(--accent);font-weight:600}
+.c-note.ex{fill:var(--epi)}
+.c-line{fill:none;stroke:var(--glc);stroke-width:2.4;stroke-linejoin:round;stroke-linecap:round}
+.c-cur{stroke:var(--ink);stroke-width:1;stroke-dasharray:2 3;opacity:.55;transition:all .5s}
+.c-mk{cursor:pointer}
+.c-mk .hit{fill:transparent}
+.c-mk .dt{fill:var(--surface);stroke:var(--glc);stroke-width:1.8;transition:all .3s}
+.c-mk.on .dt{fill:var(--glc);stroke:var(--ink);stroke-width:1.5}
+.c-mk:hover .dt{stroke-width:2.6}
+
+.meter{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:end;gap:6px 10px;padding:9px 0}
+.meter+.meter{border-top:1px solid var(--line)}
+.m-name{font-size:13px;font-weight:600;line-height:1.3}
+.m-name small{font-size:11px;color:var(--ink-3);font-weight:500;margin-left:6px}
+.m-bar{grid-row:2;grid-column:1/-1;position:relative;height:10px;border-radius:5px;background:var(--surface-2)}
+.m-fill{position:absolute;left:0;top:0;bottom:0;border-radius:5px;background:var(--c);width:0;transition:width 1.1s cubic-bezier(.3,.7,.2,1)}
+.m-base{position:absolute;top:-3px;bottom:-3px;width:2px;background:var(--ink-3);border-radius:1px}
+.m-val{grid-row:1;grid-column:2;font-size:12px;font-weight:600;color:var(--ink-2);text-align:right}
+.fine{font-size:11.5px;color:var(--ink-3);margin:8px 0 0;line-height:1.5}
+
+.dm{background:var(--surface-2);border-radius:18px;padding:18px 20px}
+.dm h3{font-family:var(--f-display);font-size:18px;margin:0 0 10px;font-weight:700;letter-spacing:0;color:var(--ink)}
+.dm ul{margin:0;padding:0;list-style:none;display:grid;gap:10px}
+.dm li{color:var(--ink-2);font-size:14px;line-height:1.6;padding-left:14px;position:relative}
+.dm li::before{content:"";position:absolute;left:0;top:.62em;width:6px;height:6px;border-radius:50%;background:var(--ink-3)}
+.dm b{color:var(--ink);font-weight:600;margin-right:4px}
+.rx{display:inline-block;font-size:11.5px;font-weight:600;color:var(--accent);background:var(--accent-soft);border-radius:6px;padding:0 7px;margin-left:4px;white-space:nowrap}
+
+.legend{display:flex;flex-wrap:wrap;gap:8px 16px}
+.lg{display:inline-flex;align-items:center;gap:6px;font-size:12.5px;color:var(--ink-2)}
+.lg svg{width:16px;height:16px;flex:none}
+
+/* comparison */
+.compare{margin-top:44px}
+.compare h2{font-family:var(--f-display);font-size:clamp(21px,2.6vw,27px);margin:0 0 6px;font-weight:700}
+.compare > p{color:var(--ink-2);margin:0 0 14px;max-width:64ch}
+.tbl-wrap{overflow-x:auto;border-radius:16px;box-shadow:0 0 0 1px var(--line);background:var(--surface)}
+table{border-collapse:collapse;width:100%;min-width:760px;font-size:13.5px}
+th,td{padding:11px 14px;text-align:left;vertical-align:top;border-bottom:1px solid var(--line);line-height:1.5}
+tbody tr:last-child th,tbody tr:last-child td{border-bottom:0}
+thead th{font-size:13px;background:var(--surface-2)}
+thead th button{border:0;background:none;padding:0;font-weight:700;cursor:pointer;text-decoration:underline;text-decoration-color:var(--line);text-underline-offset:4px}
+thead th button:hover{text-decoration-color:var(--accent);color:var(--accent)}
+thead th.cur{color:var(--accent)}
+tbody th{font-weight:600;color:var(--ink-2);white-space:nowrap;width:120px}
+td.cur{background:var(--accent-soft)}
+#rxcmp tbody th button{border:0;background:none;padding:0;font-weight:700;color:var(--ink);cursor:pointer;text-decoration:underline;text-decoration-color:var(--line);text-underline-offset:4px}
+#rxcmp tbody th button:hover{color:var(--rx);text-decoration-color:var(--rx)}
+#rxcmp tr.cur > *{background:color-mix(in srgb,var(--rx) 10%,var(--surface))}
+.foot{margin-top:28px;font-size:12.5px;color:var(--ink-3);max-width:80ch;line-height:1.6}
+
+@media (prefers-reduced-motion: reduce){
+  .track-flow,.nerve.on path{animation:none}
+  .gluts,#droplet,.m-fill{transition-duration:.01s}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <div class="eyebrow">당뇨병 병태생리 · 혈당 조절과 약물</div>
+    <h1>혈당 조절 시뮬레이터</h1>
+    <p class="lede">밥을 먹을 때, 굶을 때, 고기를 먹을 때, 운동할 때. 상황마다 몸은 서로 다른 호르몬과 장기를 꺼내 써서 혈당을 맞춰요. 단계를 넘기며 포도당과 호르몬이 어디서 나와 어디로 가는지 따라가 보세요. 「몸 상태」를 바꾸면 제2형·제1형 당뇨병에서 같은 상황이 어떻게 달라지는지 볼 수 있고, 「약물 작용」에서는 제2형 당뇨병에서 고장 난 지점을 약 10종이 각각 어떻게 고치는지 비교할 수 있어요.</p>
+  </header>
+
+  <div class="tabs" role="group" aria-label="상황 선택">
+    <button class="tab" type="button" data-sc="meal" aria-pressed="true">
+      <svg viewBox="0 0 32 32" aria-hidden="true"><path d="M4 16h24a12 9.5 0 0 1-24 0z"/><path d="M7.5 16c1.2-3.8 4.4-5.8 8.5-5.8s7.3 2 8.5 5.8"/><path d="M12.5 7.5c-1.2-1.4 1.2-2.6 0-4.2M18.5 7.5c-1.2-1.4 1.2-2.6 0-4.2"/></svg>
+      <span class="tab-t">탄수화물 식사</span><span class="tab-s">밥·빵을 먹은 뒤 3시간</span>
+    </button>
+    <button class="tab" type="button" data-sc="fasting" aria-pressed="false">
+      <svg viewBox="0 0 32 32" aria-hidden="true"><path d="M20 4.5A11.5 11.5 0 1 0 27.5 21 9.5 9.5 0 0 1 20 4.5z"/><path d="M24 7.5v4M22 9.5h4"/></svg>
+      <span class="tab-t">공복</span><span class="tab-s">밤사이부터 3일 금식까지</span>
+    </button>
+    <button class="tab" type="button" data-sc="protein" aria-pressed="false">
+      <svg viewBox="0 0 32 32" aria-hidden="true"><path d="M16 3.5c-5.2 0-9.5 9-9.5 15a9.5 9.5 0 0 0 19 0c0-6-4.3-15-9.5-15z"/><circle cx="16" cy="19.5" r="3.6"/></svg>
+      <span class="tab-t">단백질 식사</span><span class="tab-s">고기·달걀 위주, 탄수화물 적게</span>
+    </button>
+    <button class="tab" type="button" data-sc="exercise" aria-pressed="false">
+      <svg viewBox="0 0 32 32" aria-hidden="true"><path d="M3.5 13v6M7.5 9.5v13M24.5 9.5v13M28.5 13v6M7.5 16h17"/></svg>
+      <span class="tab-t">운동</span><span class="tab-s">중강도 유산소 60분 이상</span>
+    </button>
+    <button class="tab rxtab" type="button" data-sc="drugs" aria-pressed="false">
+      <svg viewBox="0 0 32 32" aria-hidden="true"><rect x="4.5" y="11" width="23" height="10" rx="5" transform="rotate(-35 16 16)"/><path d="M12.2 9.6 19.8 22.4"/></svg>
+      <span class="tab-t">약물 작용</span><span class="tab-s">제2형 당뇨병 + 약 10종</span>
+    </button>
+  </div>
+
+  <div class="main">
+    <div class="map-col">
+      <div class="rxbar" id="dmbar">
+        <span class="rxbar-t">몸 상태</span>
+        <div class="seg dmseg" role="group" aria-label="몸 상태 선택">
+          <button type="button" data-v="" aria-pressed="true">정상인</button>
+          <button type="button" data-v="t2" aria-pressed="false">제2형</button>
+          <button type="button" data-v="t1" aria-pressed="false">제1형</button>
+        </div>
+      </div>
+      <div class="rxbar" id="rxbar" hidden>
+        <span class="rxbar-t" id="rxbar-t">제2형 당뇨병 환자</span>
+        <div class="seg" role="group" aria-label="약 복용 비교">
+          <button type="button" data-v="0" aria-pressed="false">약 없이</button>
+          <button type="button" data-v="1" aria-pressed="true">약 복용</button>
+        </div>
+      </div>
+      <div class="map" id="map">
+        <svg id="map-svg" viewBox="0 0 440 640" role="img" aria-label="뇌, 간, 췌장, 위·소장, 근육, 지방조직, 부신, 신장이 혈액 순환 고리로 연결된 지도">
+          <defs>
+            <pattern id="stripes" width="7" height="7" patternUnits="userSpaceOnUse"><path class="stripe" d="M3.5 0V7"/></pattern>
+          </defs>
+          <g class="vessels">
+            <line x1="240" y1="78" x2="240" y2="104"/>
+            <line x1="122" y1="179" x2="136" y2="179"/>
+            <line x1="122" y1="332" x2="136" y2="332"/>
+            <line x1="122" y1="485" x2="136" y2="485"/>
+            <line x1="304" y1="189" x2="318" y2="189"/>
+            <line x1="304" y1="352" x2="318" y2="352"/>
+            <line x1="304" y1="495" x2="318" y2="495"/>
+            <line x1="240" y1="560" x2="240" y2="578"/>
+          </g>
+          <rect class="track" x="136" y="104" width="168" height="456" rx="36"/>
+          <rect class="track-flow" x="136" y="104" width="168" height="456" rx="36"/>
+          <g class="chev">
+            <path d="M-3.5 -5 L3 0 L-3.5 5" transform="translate(278 104)"/>
+            <path d="M-3.5 -5 L3 0 L-3.5 5" transform="translate(304 272) rotate(90)"/>
+            <path d="M-3.5 -5 L3 0 L-3.5 5" transform="translate(196 560) rotate(180)"/>
+            <path d="M-3.5 -5 L3 0 L-3.5 5" transform="translate(136 412) rotate(270)"/>
+          </g>
+          <text class="in-label" x="220" y="134">혈액 순환 ↻</text>
+
+          <g class="nerve" id="nv-vagus">
+            <path d="M176 78 C176 120 160 136 160 180 L160 300 C160 316 146 322 122 322"/>
+            <text x="165" y="236">미주신경</text>
+          </g>
+          <g class="nerve" id="nv-symp">
+            <path d="M264 78 C264 120 280 136 280 180 L280 470 C280 484 296 490 318 490"/>
+            <text x="275" y="236" text-anchor="end">교감신경</text>
+          </g>
+
+          <g class="readout">
+            <path class="ro-hex" d="M4.5 0 L2.25 3.9 L-2.25 3.9 L-4.5 0 L-2.25 -3.9 L2.25 -3.9Z" transform="translate(201 288)"/>
+            <text class="ro-label" x="222" y="292">혈당</text>
+            <text class="ro-num" id="ro-num" x="220" y="334">88</text>
+            <text class="ro-unit" x="220" y="352">mg/dL</text>
+            <text class="ro-state" id="ro-state" x="220" y="373">공복 정상 범위</text>
+          </g>
+
+          <!-- 뇌 -->
+          <g class="organ" id="o-brain">
+            <rect class="o-box" x="140" y="8" width="160" height="70" rx="14"/>
+            <text class="o-name" x="154" y="31">뇌</text>
+            <text class="o-cap" x="172" y="31">인슐린 없이 포도당 사용</text>
+            <text class="o-st l0" id="st-brain-0" x="154" y="52"></text>
+            <text class="o-st" id="st-brain-1" x="154" y="67"></text>
+            <path class="brainic" d="M266 56c-4 0-6-4-4-7-2-4 2-8 6-7 2-4 9-4 11 0 4-1 8 2 7 6 3 3 1 8-3 8-2 3-8 4-11 1-2 1-5 0-6-1z"/>
+            <path class="brainic2" d="M272 46c1 3 4 3 5 1M276 55c1-3 5-3 6 0"/>
+          </g>
+
+          <!-- 간 -->
+          <g class="organ" id="o-liver">
+            <rect class="o-box" x="6" y="104" width="116" height="150" rx="14"/>
+            <text class="o-name" x="18" y="127">간</text>
+            <text class="o-cap" x="36" y="127">공용 연료창고</text>
+            <text class="o-st l0" id="st-liver-0" x="18" y="149"></text>
+            <text class="o-st" id="st-liver-1" x="18" y="164"></text>
+            <g class="glyco" id="gly-liver"></g>
+            <text class="o-mini" x="18" y="244">글리코겐</text>
+          </g>
+
+          <!-- 췌장 -->
+          <g class="organ" id="o-pancreas">
+            <rect class="o-box" x="6" y="268" width="116" height="128" rx="14"/>
+            <text class="o-name" x="18" y="291">췌장</text>
+            <text class="o-cap" x="53" y="291">랑게르한스섬</text>
+            <circle class="halo" id="halo-beta" cx="46" cy="326" r="22" fill="var(--ins)"/>
+            <circle class="halo" id="halo-alpha" cx="82" cy="314" r="15" fill="var(--gcg)"/>
+            <g class="cell" id="cell-beta"><circle class="c" cx="46" cy="326" r="15"/><text x="46" y="330.5">β</text></g>
+            <path id="beta-x" d="M35 315 L57 337 M57 315 L35 337"/>
+            <g class="cell" id="cell-alpha"><circle class="c" cx="82" cy="314" r="10"/><text x="82" y="318">α</text></g>
+            <g class="cell" id="cell-delta"><circle class="c" cx="80" cy="341" r="7"/><text x="80" y="344.5">δ</text></g>
+            <text class="o-st l0" id="st-pancreas-0" x="18" y="372"></text>
+            <text class="o-st" id="st-pancreas-1" x="18" y="387"></text>
+          </g>
+
+          <!-- 위·소장 -->
+          <g class="organ" id="o-gut">
+            <rect class="o-box" x="6" y="410" width="116" height="150" rx="14"/>
+            <text class="o-name" x="18" y="433">위·소장</text>
+            <text class="o-st l0" id="st-gut-0" x="18" y="454"></text>
+            <text class="o-st" id="st-gut-1" x="18" y="469"></text>
+            <path class="gut-tube" d="M16 498 C28 484 42 484 54 498 S80 512 92 498 S108 486 114 491"/>
+            <path class="gut-tube2" d="M16 498 C28 484 42 484 54 498 S80 512 92 498 S108 486 114 491"/>
+            <circle class="halo" id="halo-k" cx="35" cy="489" r="11" fill="var(--inc)"/>
+            <circle class="halo" id="halo-l" cx="86" cy="505" r="11" fill="var(--inc)"/>
+            <g class="kl"><circle class="c" cx="35" cy="489" r="6"/><text x="35" y="492">K</text></g>
+            <g class="kl"><circle class="c" cx="86" cy="505" r="6"/><text x="86" y="508">L</text></g>
+            <g id="food-carb" class="food">
+              <path class="f-steam" d="M29 521c-2-3 2-4 0-7M37 521c-2-3 2-4 0-7"/>
+              <path class="f-rice" d="M17 534c2-7 9-10 19-10s17 3 19 10z"/>
+              <path class="f-bowl" d="M14 534h44a22 15 0 0 1-44 0z"/>
+            </g>
+            <g id="food-protein" class="food">
+              <path class="f-egg" d="M27 519c-6 0-10 9-10 16a10 10 0 0 0 20 0c0-7-4-16-10-16z"/>
+              <path class="f-meat" d="M42 533c0-6 6-9 12-7 5 2 6 8 2 12-3 3-6 3-8 6-2 3-6 2-6-2z"/>
+            </g>
+          </g>
+
+          <!-- 근육 -->
+          <g class="organ" id="o-muscle">
+            <rect class="o-box" x="318" y="104" width="116" height="170" rx="14"/>
+            <text class="o-name" x="330" y="127">근육</text>
+            <text class="o-cap" x="363" y="127">자체 연료창고</text>
+            <text class="o-st l0" id="st-muscle-0" x="330" y="149"></text>
+            <text class="o-st" id="st-muscle-1" x="330" y="164"></text>
+            <rect class="cell-rect" x="330" y="174" width="94" height="56" rx="9"/>
+            <rect x="330" y="174" width="94" height="56" rx="9" fill="url(#stripes)" opacity=".7"/>
+            <g class="gluts" id="glut-muscle">
+              <rect class="glut" x="372" y="178" width="5" height="10" rx="2"/>
+              <rect class="glut" x="372" y="191" width="5" height="10" rx="2"/>
+              <rect class="glut" x="372" y="204" width="5" height="10" rx="2"/>
+              <rect class="glut" x="372" y="217" width="5" height="10" rx="2"/>
+            </g>
+            <text class="o-mini" x="330" y="256">글리코겐</text>
+            <g class="glyco" id="gly-muscle"></g>
+          </g>
+
+          <!-- 지방조직 -->
+          <g class="organ" id="o-fat">
+            <rect class="o-box" x="318" y="288" width="116" height="128" rx="14"/>
+            <text class="o-name" x="330" y="311">지방조직</text>
+            <text class="o-st l0" id="st-fat-0" x="330" y="332"></text>
+            <text class="o-st" id="st-fat-1" x="330" y="347"></text>
+            <rect class="cell-rect" x="330" y="358" width="94" height="48" rx="9"/>
+            <g id="droplet"><circle cx="397" cy="382" r="17"/></g>
+            <g class="gluts" id="glut-fat">
+              <rect class="glut" x="360" y="365" width="5" height="10" rx="2"/>
+              <rect class="glut" x="360" y="383" width="5" height="10" rx="2"/>
+            </g>
+          </g>
+
+          <!-- 부신 -->
+          <g class="organ" id="o-adrenal">
+            <rect class="o-box" x="318" y="430" width="116" height="130" rx="14"/>
+            <text class="o-name" x="330" y="453">부신</text>
+            <text class="o-cap" x="362" y="453">교감신경</text>
+            <text class="o-st l0" id="st-adrenal-0" x="330" y="474"></text>
+            <text class="o-st" id="st-adrenal-1" x="330" y="489"></text>
+            <circle class="halo" id="halo-adr" cx="396" cy="510" r="16" fill="var(--epi)"/>
+            <ellipse class="kid" cx="396" cy="533" rx="13" ry="16"/>
+            <path class="adr" d="M384 518 Q396 498 408 518 Z"/>
+          </g>
+
+          <!-- 신장 -->
+          <g class="organ" id="o-kidney">
+            <rect class="o-box" x="140" y="578" width="160" height="56" rx="14"/>
+            <text class="o-name" x="154" y="597">신장</text>
+            <text class="o-st l0" id="st-kidney-0" x="154" y="613"></text>
+            <text class="o-st" id="st-kidney-1" x="154" y="627"></text>
+            <ellipse class="kid" cx="278" cy="606" rx="10" ry="14"/>
+          </g>
+          <g id="rx-tags"></g>
+        </svg>
+        <canvas id="cv" aria-hidden="true"></canvas>
+      </div>
+
+      <div class="ctrl">
+        <button class="ib" id="prev" type="button" aria-label="이전 단계"><svg viewBox="0 0 20 20"><path d="M12.5 4.5 7 10l5.5 5.5"/></svg></button>
+        <button class="play" id="play" type="button" aria-pressed="false"><svg viewBox="0 0 20 20" id="play-ic"><path d="M6 4.2v11.6L15.5 10z"/></svg><span id="play-t">자동 재생</span></button>
+        <button class="ib" id="next" type="button" aria-label="다음 단계"><svg viewBox="0 0 20 20"><path d="M7.5 4.5 13 10l-5.5 5.5"/></svg></button>
+        <div class="dots" id="dots"></div>
+      </div>
+      <div class="prog" aria-hidden="true"><i id="progbar"></i></div>
+      <p class="map-note">입자는 혈액(분홍 고리)을 따라 시계 방향으로 흘러요. 강조된 테두리가 지금 단계의 주인공이에요. 키보드 ← → 로도 넘길 수 있어요.</p>
+    </div>
+
+    <section class="panel" aria-label="단계 해설">
+      <article class="step" aria-live="polite">
+        <div class="step-meta"><span class="cnt" id="st-count">1 / 7</span><span id="st-when"></span><span class="tag" id="st-tag"></span></div>
+        <h2 id="st-title"></h2>
+        <p class="rx-prod" id="st-prod" hidden></p>
+        <p id="st-body"></p>
+        <div class="t2note" id="st-note" hidden><b id="st-note-h">제2형 당뇨병에서는</b><p id="st-note-t"></p></div>
+        <div class="mech" id="st-mech"></div>
+      </article>
+
+      <div class="duo">
+        <div class="sec">
+          <h3>혈당 변화 <small id="chart-sub"></small></h3>
+          <svg id="chart" viewBox="0 0 360 184" role="img" aria-label="이 상황의 혈당 곡선"></svg>
+        </div>
+        <div class="sec">
+          <h3>호르몬 신호</h3>
+          <div id="meters"></div>
+          <p class="fine">막대의 세로선은 기저 수준이에요. 원리를 보여주는 상대적 크기이고 실측값은 아니에요.</p>
+        </div>
+      </div>
+
+      <aside class="dm">
+        <h3 id="dm-title"></h3>
+        <dl class="rx-facts" id="rx-facts" hidden></dl>
+        <ul id="dm-list"></ul>
+      </aside>
+
+      <div class="sec">
+        <h3>그림 읽는 법</h3>
+        <div class="legend" id="legend"></div>
+      </div>
+    </section>
+  </div>
+
+  <section class="compare">
+    <h2>네 가지 상황 한눈에 비교</h2>
+    <p>같은 혈당 조절이라도 목적이 다르면 꺼내 쓰는 도구가 달라요. 열 제목을 누르면 그 상황으로 이동해요.</p>
+    <div class="tbl-wrap">
+      <table id="cmp">
+        <thead><tr><th scope="col">구분</th><th scope="col" data-sc="meal"><button type="button" data-go="meal">탄수화물 식사</button></th><th scope="col" data-sc="fasting"><button type="button" data-go="fasting">공복</button></th><th scope="col" data-sc="protein"><button type="button" data-go="protein">단백질 식사</button></th><th scope="col" data-sc="exercise"><button type="button" data-go="exercise">운동</button></th></tr></thead>
+        <tbody>
+          <tr><th scope="row">몸의 목표</th><td>들어온 연료 저장</td><td>저장 연료 공급·동원</td><td>아미노산 처리, 혈당 유지</td><td>근육에 연료 공급</td></tr>
+          <tr><th scope="row">인슐린</th><td>크게 증가</td><td>낮음</td><td>증가</td><td>감소 (α2 브레이크)</td></tr>
+          <tr><th scope="row">글루카곤</th><td>억제</td><td>상대적으로 우세</td><td>함께 증가</td><td>오래 할수록 증가</td></tr>
+          <tr><th scope="row">인크레틴</th><td>크게 증가 (GLP-1·GIP)</td><td>기저</td><td>약간 증가</td><td>변화 적음</td></tr>
+          <tr><th scope="row">아드레날린</th><td>기저</td><td>혈당이 70 근처면 증가</td><td>기저</td><td>증가</td></tr>
+          <tr><th scope="row">간</th><td>포도당 생산 ↓, 글리코겐 합성</td><td>글리코겐 분해 → 포도당신생 → 케톤체</td><td>아미노산 분해·요소 생성, 포도당 공급 유지</td><td>글리코겐 분해, 젖산으로 포도당신생</td></tr>
+          <tr><th scope="row">근육의 포도당</th><td>인슐린 → GLUT4 → 흡수·글리코겐 저장</td><td>거의 안 받음, 지방산 사용</td><td>아미노산 흡수, 단백질 합성</td><td>수축 → GLUT4 (인슐린 없이 흡수)</td></tr>
+          <tr><th scope="row">지방조직</th><td>지방분해 ↓, 저장</td><td>지방분해 ↑</td><td>큰 변화 없음</td><td>지방분해 ↑</td></tr>
+          <tr><th scope="row">혈당 모양</th><td>올랐다가 2~3시간 안에 회복</td><td>70~99 mg/dL 유지</td><td>거의 평탄</td><td>거의 일정 (고강도면 일시 상승 가능)</td></tr>
+          <tr class="dmrow"><th scope="row">제2형 당뇨병</th><td>저항성·분비 부족·글루카곤 과다로 200 mg/dL 넘게 오래 높음</td><td>간 과잉 생산으로 공복혈당 126 mg/dL 이상</td><td>글루카곤 과다로 완만하게 상승</td><td>수축 → GLUT4 경로는 남아 있어 혈당이 실제로 내려감</td></tr>
+          <tr class="dmrow t1row"><th scope="row">제1형 (인슐린 부족)</th><td>인슐린이 전혀 오르지 않아 300 mg/dL 넘게 계속 높음</td><td>지방분해·케톤 생성 폭주 → 케톤산증(DKA)</td><td>글루카곤만 올라 혈당 상승</td><td>간 방출을 못 눌러 혈당·케톤이 오히려 상승 (인슐린 치료 중이면 반대로 저혈당 주의)</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="compare">
+    <h2>당뇨병 약, 무엇을 고치나</h2>
+    <p>모든 당뇨약은 혈당을 낮추지만 서로 다른 고장 지점을 겨냥해요. 약 이름을 누르면 지도에서 작용을 볼 수 있어요.</p>
+    <div class="tbl-wrap">
+      <table id="rxcmp">
+        <thead><tr><th scope="col">약물 계열</th><th scope="col">작용 부위</th><th scope="col">고치는 고장</th><th scope="col">혈당강하</th><th scope="col">체중</th><th scope="col">단독 저혈당</th></tr></thead>
+        <tbody>
+          <tr><th scope="row"><button type="button" data-drug="0">메트포르민</button></th><td>간</td><td>간의 포도당 과잉 생산</td><td>높음</td><td>중립~소폭 감소</td><td>매우 낮음</td></tr>
+          <tr><th scope="row"><button type="button" data-drug="1">SGLT2 억제제</button></th><td>신장 근위세뇨관</td><td>포도당 재흡수 → 요당 배출</td><td>중간~높음</td><td>감소</td><td>매우 낮음</td></tr>
+          <tr><th scope="row"><button type="button" data-drug="2">DPP-4 억제제</button></th><td>혈중 DPP-4 효소</td><td>인크레틴이 빨리 분해됨</td><td>중간</td><td>중립</td><td>매우 낮음</td></tr>
+          <tr><th scope="row"><button type="button" data-drug="3">GLP-1 작용제</button></th><td>췌장·뇌·위</td><td>인슐린 부족·글루카곤 과다·과식</td><td>높음~매우 높음</td><td>감소</td><td>매우 낮음</td></tr>
+          <tr><th scope="row"><button type="button" data-drug="4">터제파타이드</button></th><td>GIP·GLP-1 수용체</td><td>인크레틴 신호를 이중으로 강화</td><td>매우 높음</td><td>크게 감소</td><td>매우 낮음</td></tr>
+          <tr><th scope="row"><button type="button" data-drug="5">설포닐우레아</button></th><td>췌장 β세포 KATP</td><td>인슐린 분비 부족 (직접 촉진)</td><td>높음</td><td>증가</td><td>높음</td></tr>
+          <tr><th scope="row"><button type="button" data-drug="6">글리니드</button></th><td>췌장 β세포 KATP</td><td>식사 초기 분비 부족</td><td>식후 혈당 위주</td><td>증가 가능</td><td>있음 (SU보다 짧음)</td></tr>
+          <tr><th scope="row"><button type="button" data-drug="7">TZD</button></th><td>지방·근육·간 (PPAR-γ)</td><td>인슐린 저항성</td><td>높음</td><td>증가</td><td>매우 낮음</td></tr>
+          <tr><th scope="row"><button type="button" data-drug="8">α-GI</button></th><td>소장 점막</td><td>탄수화물이 너무 빨리 흡수됨</td><td>비교적 낮음</td><td>중립</td><td>매우 낮음</td></tr>
+          <tr><th scope="row"><button type="button" data-drug="9">인슐린</button></th><td>간·근육·지방</td><td>인슐린 자체가 부족함</td><td>매우 높음</td><td>증가</td><td>높음</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="fine">정량 비교가 아닌 임상적 상대 평가예요(문서 제2부 표). 용량·초기 HbA1c·병용약에 따라 달라지고, SU나 인슐린을 함께 쓰면 다른 계열에서도 저혈당 위험이 커질 수 있어요. 글리니드 행은 본문 서술을 기준으로 했어요.</p>
+  </section>
+
+  <p class="foot">혈당 곡선은 건강한 성인의 전형적인 경향을 단순화한 예시이고, 약물 작용 탭의 곡선도 각 약의 방향을 보여주는 개념 예시예요. 실제 효과 크기는 환자와 용량마다 달라요. 입자 수와 호르몬 막대는 원리를 보여주기 위한 상대적 표현이에요. 내용은 「당뇨병의 병태생리」 문서(제1·5·6부)를 바탕으로 했어요. 주요 근거: ADA Standards of Care in Diabetes 2026, Endotext Glucagon Physiology, Campbell &amp; Newgard 2021(Nat Rev Mol Cell Biol), Nauck &amp; Meier 2016(Lancet Diabetes Endocrinol). 진단·치료 판단은 개별 임상 평가가 필요해요.</p>
+</div>
+
+<script>
+(() => {
+'use strict';
+const $ = s => document.querySelector(s);
+const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+const SPEED = reduce ? .55 : 1, RATE = reduce ? .6 : 1;
+const STEP_DUR = 11;
+const TAU = Math.PI * 2;
+const rnd = (a, b) => a + Math.random() * (b - a);
+
+/* ---------- 시나리오 데이터 ---------- */
+const H = (ins, gcg, inc, epi) => ({ ins, gcg, inc, epi });
+const ORGS = ['brain','liver','pancreas','gut','muscle','fat','adrenal','kidney'];
+
+const SCN = {
+meal: {
+  name: '탄수화물 식사', unit: '식후 시간(분)', T: 180, ticks: [0,30,60,90,120,150,180],
+  curve: [[0,88],[10,95],[20,112],[30,128],[45,140],[60,137],[90,118],[120,102],[150,92],[180,88]],
+  base: {
+    st: { brain:['포도당 상시 사용',''], liver:['포도당 방출','(밤사이 기저)'], pancreas:['인슐린 기저','글루카곤 기저'], gut:['전분 → 포도당','분해 시작'], muscle:['휴식','GLUT4 안쪽'], fat:['기저 상태',''], adrenal:['조용함',''], kidney:['여과·재흡수',''] },
+    stores: { liver:.45, muscle:.5, fat:.6 }, glut: { muscle:0, fat:0 }, food: 'carb'
+  },
+  steps: [
+    { t:0, when:'식사 직후', tag:'뇌상 반응', focus:['brain','pancreas','gut'], nerves:['vagus'],
+      title:'먹기 시작하면 뇌가 먼저 신호를 보내요',
+      body:'음식을 보고 씹고 맛보는 감각이 뇌간과 미주신경을 거쳐 췌장에 전달돼요. 신경 끝에서 나온 아세틸콜린(ACh)이 β세포를 자극해 인슐린 분비를 미리 준비시켜요. 이를 뇌상(cephalic phase) 인슐린 반응이라고 하는데, 사람에서는 크기가 작고 개인차가 커요.',
+      mech:['음식 감각','미주신경','ACh → β세포 M3 수용체','인슐린 분비 준비'],
+      st:{ brain:['음식 감지','미주신경 →'], pancreas:['인슐린 준비','글루카곤 기저'] },
+      hor:H(.32,.28,.1,.1),
+      flows:[['glc','gut','pool',.6],['glc','liver','pool',.5],['glc','pool','brain',.9]] },
+    { t:12, when:'식후 10~15분', tag:'흡수', focus:['gut','liver'],
+      title:'포도당이 소장에서 혈액으로 들어와요',
+      body:'밥의 전분이 포도당으로 분해되어 소장에서 흡수돼요. 흡수된 포도당은 문맥을 통해 간을 먼저 거친 뒤 온몸으로 퍼져요. 혈액이라는 도로 위에 연료(노란 육각형)가 늘어나면서 혈당이 오르기 시작해요.',
+      mech:['전분','포도당','소장 흡수','문맥 → 간','온몸의 혈액'],
+      st:{ brain:['포도당 상시 사용',''], gut:['포도당 흡수 ↑','→ 문맥'], liver:['문맥으로','포도당 도착'] },
+      hor:H(.45,.22,.35,.1),
+      flows:[['glc','gut','pool',3.2],['glc','pool','brain',.9],['glc','pool','liver',.8],['inc','gut','pancreas',.6],['ins','pancreas','liver|muscle|fat',.8]] },
+    { t:20, when:'식후 20분', tag:'인크레틴', focus:['gut','pancreas','brain'],
+      title:'장이 췌장에 “식사가 들어왔다”고 알려요',
+      body:'소장의 K세포는 GIP를, L세포는 GLP-1을 분비해요. 이 인크레틴은 혈당이 오른 상태에서 β세포의 인슐린 분비를 크게 키워요. 그래서 같은 혈당이라도 입으로 먹은 포도당이 주사한 포도당보다 인슐린을 훨씬 많이 끌어내요(인크레틴 효과). 대신 DPP-4 효소가 몇 분 만에 분해해서 일부 입자는 가는 도중 사라져요. GLP-1은 뇌에 포만감을 전하고 위 배출도 늦춰요.',
+      mech:['K세포 GIP · L세포 GLP-1','β세포 Gs–cAMP','인슐린 분비 증폭','DPP-4가 빠르게 분해'],
+      st:{ gut:['K세포 GIP','L세포 GLP-1'], pancreas:['인슐린 증폭','글루카곤 ↓'], brain:['GLP-1 신호','포만감 ↑'] },
+      hor:H(.62,.15,.85,.1),
+      flows:[['glc','gut','pool',3],['inc','gut','pancreas',2.6],['inc','gut','brain',.7],['ins','pancreas','liver|muscle|fat',1.6],['glc','pool','brain',.9]] },
+    { t:30, when:'식후 30분', tag:'포도당 자극 인슐린 분비', focus:['pancreas'],
+      title:'β세포가 혈당을 직접 재서 인슐린을 내보내요',
+      body:'β세포로 들어온 포도당은 글루코키나아제(GCK)에서 대사되어 ATP를 늘려요. ATP가 늘면 KATP 통로가 닫히고, 세포막이 탈분극되고, 칼슘이 들어오면서 인슐린 과립이 분비돼요. 미리 준비된 과립이 빠르게 나오는 1상, 새 과립이 꾸준히 나오는 2상으로 나뉘어요. 이때 α세포의 글루카곤은 억제돼요.',
+      mech:['포도당 유입','GCK','ATP↑','KATP 닫힘','탈분극','Ca²⁺ 유입','인슐린 과립 분비'],
+      st:{ pancreas:['인슐린 1·2상','글루카곤 억제'], gut:['포도당 흡수 ↑','인크레틴 분비'] },
+      hor:H(.9,.1,.7,.1),
+      flows:[['glc','gut','pool',2.6],['glc','pool','pancreas',1.6],['ins','pancreas','liver|muscle|fat',4],['inc','gut','pancreas',1.4],['glc','pool','brain',.9]] },
+    { t:50, when:'식후 45~60분', tag:'인슐린 작용 · 근육·지방', focus:['muscle','fat'],
+      title:'인슐린 열쇠가 근육과 지방의 문을 열어요',
+      body:'인슐린이 근육·지방세포 수용체에 붙으면 IRS → PI3K → Akt 신호가 켜지고, 세포 안에 있던 포도당 통로 GLUT4가 세포막으로 올라와요(작은 막대가 왼쪽 막으로 이동). 문이 열리니 포도당이 세포 안으로 들어가요. 인슐린에 반응해 포도당을 가장 많이 받아들이는 조직이 근육이에요. 지방조직은 지방분해를 멈추고 저장 쪽으로 돌아서요.',
+      mech:['인슐린','수용체','IRS','PI3K','Akt','GLUT4 막 이동','포도당 유입'],
+      st:{ muscle:['GLUT4 → 막','포도당 흡수 ↑'], fat:['GLUT4 → 막','지방분해 ↓'] },
+      glut:{ muscle:1, fat:1 }, stores:{ muscle:.7, fat:.68 },
+      hor:H(.95,.1,.5,.1),
+      flows:[['glc','gut','pool',1.6],['ins','pancreas','muscle|fat|muscle|liver',3.2],['glc','pool','muscle',3],['glc','pool','fat',1.1],['glc','pool','brain',.9]] },
+    { t:90, when:'식후 90분', tag:'인슐린 작용 · 간', focus:['liver','muscle'],
+      title:'간은 생산을 멈추고 창고를 채워요',
+      body:'밤새 포도당을 내보내던 간도 인슐린 신호를 받으면 포도당 생산(글리코겐 분해·포도당신생)을 줄여요. 대신 들어온 포도당을 글리코겐으로 쌓아요. 근육도 받은 포도당을 글리코겐으로 저장해요. 인슐린은 혈당만 낮추는 호르몬이 아니라, 에너지를 저장하고 불필요한 생산을 멈추게 하는 호르몬이에요.',
+      mech:['인슐린','간 포도당 생산 ↓','글리코겐 합성 ↑'],
+      st:{ liver:['포도당 생산 ↓','글리코겐 합성'], muscle:['포도당 흡수','글리코겐 저장'], gut:['흡수 줄어듦',''] },
+      stores:{ liver:.82, muscle:.85 },
+      hor:H(.72,.12,.28,.1),
+      flows:[['glc','gut','pool',.8],['ins','pancreas','liver|muscle',2.4],['glc','pool','liver',2.2],['glc','pool','muscle',2],['glc','pool','brain',.9]] },
+    { t:150, when:'식후 2~3시간', tag:'회복', focus:['brain','pancreas'], food:null,
+      title:'혈당이 제자리로 돌아오면 인슐린도 내려가요',
+      body:'혈당이 내려가면 β세포 자극이 줄어 인슐린도 기저 수준으로 돌아와요. 건강한 사람은 이렇게 2~3시간 안에 공복 수준으로 돌아와요. 뇌와 적혈구는 이 모든 과정 동안 인슐린 없이 포도당을 계속 가져다 써요. 모든 세포에 인슐린 열쇠가 필요한 건 아니에요.',
+      mech:['혈당 ↓','β세포 자극 ↓','인슐린 기저','GLUT4 세포 안으로 복귀'],
+      st:{ brain:['포도당 사용','(인슐린 불필요)'], pancreas:['인슐린 기저로','글루카곤 기저'], gut:['흡수 거의 끝',''], muscle:['GLUT4 복귀 중','글리코겐 ↑'], fat:['저장 완료',''], liver:['글리코겐 ↑','생산 재개 준비'] },
+      glut:{ muscle:.2, fat:.1 }, stores:{ fat:.7 },
+      hor:H(.34,.26,.1,.1),
+      flows:[['glc','pool','brain',.9],['glc','pool','muscle',.6],['ins','pancreas','liver|muscle|fat',.6],['glc','gut','pool',.3]] }
+  ],
+  dm: { title:'제2형 당뇨병에서는 여기가 고장 나요', items:[
+    '<b>근육·지방</b>인슐린 신호(IRS → PI3K → Akt)가 막혀 GLUT4 문이 잘 열리지 않아요. 식후 혈당이 잘 내려가지 않는 이유예요.<span class="rx">TZD(피오글리타존)</span>',
+    '<b>간</b>인슐린이 있어도 포도당 생산을 충분히 멈추지 않아요.<span class="rx">메트포르민</span>',
+    '<b>췌장</b>1상 분비가 약해지고, 식후에도 글루카곤이 제대로 억제되지 않아요. 인크레틴 효과도 줄어요.<span class="rx">GLP-1 작용제</span><span class="rx">DPP-4 억제제</span>',
+    '<b>진단 기준</b>75 g 경구당부하 2시간 혈당이 200 mg/dL 이상이면 당뇨병, 140–199 mg/dL이면 당뇨병 전단계예요.'
+  ]}
+},
+fasting: {
+  name: '공복', unit: '마지막 식사 후(시간)', T: 72, ticks: [0,12,24,36,48,60,72],
+  curve: [[3,92],[6,89],[10,87],[14,85],[24,82],[36,78],[48,75],[60,72],[72,70]],
+  base: {
+    st: { brain:['포도당 상시 사용',''], liver:['포도당 생산','다시 시작'], pancreas:['인슐린 ↓','글루카곤 기저'], gut:['흡수 끝',''], muscle:['휴식','GLUT4 안쪽'], fat:['지방분해','조금씩 ↑'], adrenal:['조용함',''], kidney:['여과·재흡수',''] },
+    stores: { liver:.85, muscle:.82, fat:.72 }, glut: { muscle:0, fat:0 }, food: null
+  },
+  steps: [
+    { t:3.5, when:'식후 3~4시간', tag:'전환', focus:['pancreas','liver'],
+      title:'흡수가 끝나면 “저장”에서 “공급”으로 바뀌어요',
+      body:'장에서 들어오는 포도당이 끊기면 인슐린이 기저 수준으로 내려가요. 간은 인슐린과 글루카곤의 상대적인 비율을 읽고 다시 포도당을 내보내기 시작해요. 두 호르몬은 켜고 끄는 스위치가 아니라 시소처럼 비율로 작동해요.',
+      mech:['흡수 끝','인슐린 ↓','인슐린/글루카곤 비율 변화','간 포도당 생산 재개'],
+      stores:{ liver:.8 },
+      hor:H(.28,.34,.05,.1),
+      flows:[['gcg','pancreas','liver',.8],['ins','pancreas','liver|muscle|fat',.5],['glc','liver','pool',1],['glc','pool','brain',1]] },
+    { t:10, when:'밤사이 (약 10시간)', tag:'글리코겐 분해', focus:['liver','brain'],
+      title:'밤새 간이 글리코겐 창고를 열어요',
+      body:'글루카곤이 간세포의 글루카곤 수용체(GCGR)에 붙으면 cAMP–PKA 신호가 켜지고, 간 글리코겐이 분해되어 포도당이 혈액으로 나가요. 간은 온몸이 함께 쓰는 공용 연료창고예요. 이 창고 덕분에 잠자는 동안에도 뇌와 적혈구는 포도당을 계속 쓸 수 있어요.',
+      mech:['글루카곤','GCGR','Gs–cAMP–PKA','글리코겐 분해','포도당 방출'],
+      st:{ liver:['글리코겐 분해','→ 포도당 방출'], pancreas:['인슐린 낮음','글루카곤 ↑'], brain:['간이 보낸','포도당 사용'] },
+      stores:{ liver:.55 },
+      hor:H(.2,.45,.04,.1),
+      flows:[['gcg','pancreas','liver',1.4],['glc','liver','pool',2.2],['glc','pool','brain',1.6]] },
+    { t:14, when:'공복 14시간', tag:'지방분해', focus:['fat','muscle'],
+      title:'지방이 풀려 근육의 연료가 돼요',
+      body:'인슐린이 낮아지면 지방조직의 지방분해 브레이크가 풀려요. 중성지방이 지방산과 글리세롤로 나뉘어 혈액으로 나와요. 근육은 지방산을 주연료로 쓰고 포도당은 뇌에 양보해요. 근육 글리코겐은 혈액으로 내보낼 수 없어요(포도당-6-인산분해효소가 없어서). 근육 창고는 자기 전용이에요.',
+      mech:['인슐린 ↓','지방분해 ↑','지방산 → 근육','글리세롤 → 간'],
+      st:{ fat:['지방분해 ↑','지방산·글리세롤'], muscle:['지방산 사용','포도당 아낌'], brain:['포도당 상시 사용',''] },
+      stores:{ liver:.42, fat:.64 }, pools:{ ffa:5 },
+      hor:H(.16,.5,.04,.1),
+      flows:[['ffa','fat','muscle',2],['ffa','fat','liver',.6],['gly','fat','liver',.8],['glc','liver','pool',1.8],['glc','pool','brain',1.4],['gcg','pancreas','liver',1]] },
+    { t:24, when:'금식 24시간', tag:'포도당신생', focus:['liver','muscle','fat','kidney'],
+      title:'창고가 비면 간이 포도당을 새로 만들어요',
+      body:'하루쯤 지나면 간 글리코겐이 거의 바닥나요. 이제 간은 재료를 받아 포도당을 새로 만들어요. 재료는 근육·적혈구에서 온 젖산, 지방에서 온 글리세롤, 근육 단백질에서 나온 알라닌·글루타민 같은 아미노산이에요. 금식이 길어지면 신장도 포도당신생에 참여해요.',
+      mech:['젖산 · 글리세롤 · 알라닌','간(＋신장)','새 포도당'],
+      st:{ liver:['포도당신생 ↑','글리코겐 바닥'], muscle:['알라닌·젖산','내보냄'], kidney:['포도당신생 일부',''], adrenal:['조금 ↑',''] },
+      stores:{ liver:.12, muscle:.76, fat:.55 }, pools:{ ffa:5 },
+      hor:H(.12,.6,.04,.15),
+      flows:[['lac','muscle','liver',1.1],['aa','muscle','liver',1.1],['gly','fat','liver',1.1],['glc','liver','pool',1.7],['glc','kidney','pool',.5],['ffa','fat','muscle',1.5],['glc','pool','brain',1.4],['gcg','pancreas','liver',1.2]] },
+    { t:48, when:'금식 48시간', tag:'케톤체', focus:['liver','brain'],
+      title:'간이 지방산으로 케톤체를 만들어요',
+      body:'지방산이 간으로 많이 들어오면 간은 이를 산화해 케톤체를 만들어요. 낮은 인슐린과 상대적으로 높은 글루카곤이 이런 대사 환경을 만들어요. 금식이 길어질수록 뇌도 케톤체를 일부 연료로 쓰면서 포도당 필요량이 줄어요. 그만큼 포도당을 만들려고 근육 단백질을 깎아 쓰는 속도도 느려져요.',
+      mech:['지방산','간 β-산화','케톤체','뇌·근육의 대체 연료'],
+      st:{ liver:['지방산 산화','→ 케톤체'], brain:['케톤체도','연료로 사용'], muscle:['단백질 분해','점차 절약'] },
+      stores:{ liver:.08, fat:.45 }, pools:{ ffa:4, ket:8 },
+      hor:H(.1,.62,.04,.15),
+      flows:[['ffa','fat','liver',1.4],['ket','liver','brain|brain|muscle',1.8],['glc','liver','pool',1.1],['glc','kidney','pool',.5],['glc','pool','brain',.9],['aa','muscle','liver',.5],['gly','fat','liver',.8]] },
+    { t:72, when:'금식 72시간', tag:'저혈당 방어', focus:['pancreas','adrenal','liver'], nerves:['symp'],
+      title:'혈당이 70 근처까지 내려가면 방어선이 켜져요',
+      body:'혈당이 떨어지면 방어선이 순서대로 켜져요. 먼저 인슐린 분비가 더 줄고, 약 65~70 mg/dL 근처에서는 α세포의 글루카곤과 부신의 아드레날린이 늘어 간의 포도당 방출을 끌어올려요. 이 역조절 덕분에 건강한 사람은 며칠 굶어도 위험한 저혈당까지 잘 떨어지지 않아요.',
+      mech:['혈당 ↓','인슐린 ↓','글루카곤 ↑ · 아드레날린 ↑','간 포도당 방출 ↑'],
+      st:{ pancreas:['인슐린 최저','글루카곤 ↑↑'], adrenal:['아드레날린 ↑','역조절'], liver:['포도당 방출 ↑','저혈당 방어'], brain:['저혈당 감지','교감신경 →'] },
+      stores:{ liver:.05, fat:.4 }, pools:{ ffa:4, ket:9 },
+      hor:H(.05,.88,.04,.62),
+      flows:[['epi','adrenal','liver|pancreas|fat',2.2],['gcg','pancreas','liver',2.4],['glc','liver','pool',2.6],['glc','kidney','pool',.5],['glc','pool','brain',1.2],['ket','liver','brain',1],['ffa','fat','liver|muscle',1.2]] }
+  ],
+  dm: { title:'당뇨병·약국 포인트', items:[
+    '<b>공복혈당이 오르는 이유</b>제2형 당뇨병에서는 간의 인슐린 저항성과 과한 글루카곤 때문에 밤사이 간이 포도당을 너무 많이 내보내요. 공복혈당 126 mg/dL 이상이면 당뇨병, 100–125 mg/dL이면 전단계예요.<span class="rx">메트포르민</span><span class="rx">기저 인슐린</span>',
+    '<b>식사를 거를 때</b>주사한 인슐린이나 설포닐우레아로 늘어난 인슐린은 혈당이 떨어져도 저절로 줄지 않아요. 그래서 공복 중 저혈당 위험이 커요.',
+    '<b>반복 저혈당</b>저혈당이 자주 오면 글루카곤·아드레날린 역조절과 저혈당 증상 인식이 둔해질 수 있어요.',
+    '<b>SGLT2 억제제</b>장시간 금식·수술·급성 질환 때는 혈당이 높지 않아도 케톤산증이 생길 수 있어 일시 중단(sick day) 계획이 필요해요.'
+  ]}
+},
+protein: {
+  name: '단백질 식사', unit: '식후 시간(분)', T: 180, ticks: [0,30,60,90,120,150,180],
+  curve: [[0,88],[20,90],[40,92],[60,93],[90,92],[120,90],[150,89],[180,88]],
+  base: {
+    st: { brain:['포도당 상시 사용',''], liver:['포도당 방출','(기저)'], pancreas:['인슐린 기저','글루카곤 기저'], gut:['단백질 →','아미노산 흡수'], muscle:['휴식',''], fat:['기저 상태',''], adrenal:['조용함',''], kidney:['여과·재흡수',''] },
+    stores: { liver:.6, muscle:.6, fat:.6 }, glut: { muscle:0, fat:0 }, food: 'protein'
+  },
+  steps: [
+    { t:5, when:'식사 직후', tag:'흡수', focus:['gut'],
+      title:'단백질은 아미노산이 되어 들어와요',
+      body:'고기·달걀의 단백질은 위와 소장에서 아미노산으로 분해되어 흡수돼요. 탄수화물이 거의 없어서 혈액에 들어오는 포도당은 늘지 않아요. 대신 혈액 속 아미노산(보라 삼각형)이 늘어나요.',
+      mech:['단백질','펩타이드','아미노산','소장 흡수','혈액'],
+      pools:{ aa:12 },
+      hor:H(.32,.32,.18,.1),
+      flows:[['aa','gut','pool',3],['inc','gut','pancreas',.5],['glc','liver','pool',.6],['glc','pool','brain',.8]] },
+    { t:30, when:'식후 30분', tag:'아미노산 → 인슐린', focus:['pancreas'],
+      title:'탄수화물이 없어도 인슐린이 나와요',
+      body:'아미노산도 β세포를 자극해요. 아르기닌은 양전하를 띠어 세포막을 탈분극시키고, 류신은 β세포 안의 대사(GDH)를 자극해 ATP를 늘리고, 알라닌은 나트륨과 함께 들어오면서 탈분극을 일으켜요. 경로는 달라도 결과는 인슐린 분비예요.',
+      mech:['아르기닌 · 류신 · 알라닌','탈분극 · ATP↑','β세포 인슐린 분비'],
+      st:{ pancreas:['β: 아미노산','→ 인슐린 ↑'], gut:['아미노산','흡수 계속'] },
+      pools:{ aa:14 },
+      hor:H(.56,.38,.25,.1),
+      flows:[['aa','gut','pool',2.4],['aa','pool','pancreas',1.4],['ins','pancreas','muscle|liver|fat',2.4],['glc','liver','pool',.6],['glc','pool','brain',.8]] },
+    { t:45, when:'식후 45분', tag:'아미노산 → 글루카곤', focus:['pancreas','liver'],
+      title:'그런데 글루카곤도 같이 올라가요',
+      body:'아미노산은 α세포도 함께 자극해요. 탄수화물 없이 인슐린만 오르면 근육·지방이 포도당을 끌어가서 혈당이 너무 떨어질 수 있어요. 글루카곤이 함께 올라 간의 포도당 공급을 유지해서 이를 막아요. 인슐린과 글루카곤이 늘 반대로만 움직이는 건 아니에요.',
+      mech:['아미노산','α세포 글루카곤 ↑','간 포도당 공급 유지','저혈당 예방'],
+      st:{ pancreas:['인슐린 ↑','글루카곤도 ↑'], liver:['포도당 공급','유지'] },
+      pools:{ aa:14 },
+      hor:H(.58,.66,.22,.1),
+      flows:[['aa','gut','pool',1.8],['aa','pool','pancreas',1.4],['gcg','pancreas','liver',2.2],['ins','pancreas','muscle|liver',1.8],['glc','liver','pool',1.2],['glc','pool','muscle',.6],['glc','pool','brain',.8]] },
+    { t:60, when:'식후 60분', tag:'인슐린 작용 · 근육', focus:['muscle'],
+      title:'인슐린은 근육에 단백질을 쌓게 해요',
+      body:'인슐린은 혈당 호르몬이기 전에 영양소 저장 호르몬이에요. 근육이 아미노산을 받아들여 단백질을 합성하도록 돕고, 단백질이 분해되는 것은 막아요. 단백질 식사에도 인슐린이 필요한 이유예요.',
+      mech:['인슐린','근육 아미노산 흡수 ↑','단백질 합성 ↑ · 분해 ↓'],
+      st:{ muscle:['아미노산 흡수','단백질 합성 ↑'] },
+      glut:{ muscle:.45 }, pools:{ aa:11 },
+      hor:H(.55,.6,.15,.1),
+      flows:[['aa','pool','muscle',2.6],['ins','pancreas','muscle',1.8],['glc','pool','muscle',.5],['aa','gut','pool',1.2],['glc','liver','pool',1],['glc','pool','brain',.8]] },
+    { t:90, when:'식후 90분', tag:'간–α세포 축', focus:['liver','kidney'],
+      title:'글루카곤은 간에서 남는 아미노산을 처리해요',
+      body:'글루카곤은 간의 아미노산 흡수·분해와 요소(urea) 생성을 촉진해요. 아미노산의 질소는 암모니아를 거쳐 요소가 되고, 신장을 통해 소변으로 나가요(회색 십자). 아미노산 ↑ → 글루카곤 ↑ → 간이 아미노산 처리 → 아미노산 ↓로 이어지는 되먹임 고리를 간–α세포 축이라고 불러요.',
+      mech:['혈중 아미노산 ↑','α세포 글루카곤 ↑','간 아미노산 분해·요소 생성','혈중 아미노산 ↓'],
+      st:{ liver:['아미노산 분해','→ 요소 생성'], kidney:['요소 배설',''], muscle:['단백질 합성',''], gut:['흡수 줄어듦',''] },
+      glut:{ muscle:.3 }, pools:{ aa:7 },
+      hor:H(.45,.55,.1,.1),
+      flows:[['aa','pool','liver',2.2],['gcg','pancreas','liver',1.8],['urea','liver','kidney',1.4],['glc','liver','pool',1],['glc','pool','brain',.8]] },
+    { t:150, when:'식후 2~3시간', tag:'결과', focus:[], food:null,
+      title:'혈당은 거의 평평하게 유지돼요',
+      body:'혈당을 낮추는 인슐린과 올리는 글루카곤이 함께 올라 서로 균형을 맞추기 때문에, 단백질 식사 뒤 혈당은 거의 변하지 않아요. 같은 식사라도 무엇을 먹었는지에 따라 몸은 전혀 다른 호르몬 조합을 꺼내 써요.',
+      mech:['인슐린 ↑ ＋ 글루카곤 ↑','혈당 거의 평탄'],
+      st:{ pancreas:['둘 다','기저로'], gut:['흡수 끝',''], liver:['요소 생성','줄어듦'], kidney:['요소 배설',''] },
+      glut:{ muscle:.1 }, pools:{ aa:3 },
+      hor:H(.33,.36,.06,.1),
+      flows:[['aa','pool','muscle|liver',.7],['urea','liver','kidney',.6],['glc','liver','pool',.8],['glc','pool','brain',.8]] }
+  ],
+  dm: { title:'당뇨병·약국 포인트', items:[
+    '<b>부적절한 고글루카곤혈증</b>제2형 당뇨병에서는 α세포 조절 이상으로 식후에도 글루카곤이 충분히 억제되지 않아, 간이 포도당을 계속 내보낼 수 있어요.',
+    '<b>GLP-1과 GIP의 차이</b>GLP-1은 고혈당일 때 글루카곤을 억제하지만, GIP는 혈당이 정상이거나 낮을 때 글루카곤을 오히려 올릴 수 있어요.',
+    '<b>SGLT2 억제제와 극단적 저탄수화물 식단</b>정상혈당 케톤산증의 위험 요인이에요. 혈당이 200 mg/dL 미만이어도 오심·구토·복통·빠른 호흡이 있으면 의심해야 해요.',
+    '<b>인슐린은 저장 호르몬</b>단백질 식사에도 인슐린이 오른다는 건, 인슐린이 포도당뿐 아니라 아미노산 저장까지 맡는다는 뜻이에요.'
+  ]}
+},
+exercise: {
+  name: '운동', unit: '운동 시작 후(분)', T: 120, ticks: [0,30,60,90,120], shade:[0,90,'운동 중'],
+  curve: [[0,90],[5,91],[10,89],[20,87],[30,86],[45,85],[60,84],[75,83],[90,82],[100,85],[110,87],[120,88]],
+  base: {
+    st: { brain:['포도당 상시 사용',''], liver:['포도당 방출','(기저)'], pancreas:['인슐린 기저','글루카곤 기저'], gut:['조용함',''], muscle:['휴식',''], fat:['기저 상태',''], adrenal:['조용함',''], kidney:['여과·재흡수',''] },
+    stores: { liver:.75, muscle:.82, fat:.66 }, glut: { muscle:0, fat:0 }, food: null
+  },
+  steps: [
+    { t:2, when:'운동 시작', tag:'교감신경', focus:['brain','adrenal','muscle'], nerves:['symp'],
+      title:'운동을 시작하면 교감신경이 켜져요',
+      body:'운동을 시작하면 교감신경이 활성화되고 부신 수질에서 아드레날린 같은 카테콜아민(분홍 별)이 나와요. 근육은 처음 몇 분 동안 자기 창고인 근육 글리코겐을 먼저 꺼내 써요. 몸 전체가 저장 모드에서 동원 모드로 바뀌어요.',
+      mech:['운동','교감신경 활성','부신 아드레날린 ↑','연료 동원 모드'],
+      st:{ brain:['교감신경 활성',''], adrenal:['아드레날린 ↑','노르아드레날린'], muscle:['수축 시작','자체 글리코겐'] },
+      glut:{ muscle:.45 }, stores:{ muscle:.68 },
+      hor:H(.26,.3,.04,.6),
+      flows:[['epi','adrenal','liver|pancreas|fat|muscle',2.4],['glc','liver','pool',.8],['glc','pool','brain',.9],['glc','pool','muscle',.6]] },
+    { t:10, when:'운동 10분', tag:'수축 → GLUT4', focus:['muscle'], nerves:['symp'],
+      title:'근육이 수축하면 인슐린 없이도 문이 열려요',
+      body:'운동의 핵심이에요. 근육이 수축하면 인슐린 신호와는 다른 경로(수축에 따른 칼슘·에너지 신호)로 GLUT4가 세포막에 올라와요. 인슐린이 낮아도 근육이 혈액의 포도당을 빨아들일 수 있어요.',
+      mech:['근육 수축','Ca²⁺ · 에너지 신호(AMPK 등)','GLUT4 막 이동','인슐린 없이 포도당 흡수'],
+      st:{ muscle:['수축 → GLUT4','포도당 흡수 ↑'] },
+      glut:{ muscle:1 },
+      hor:H(.2,.32,.04,.65),
+      flows:[['glc','pool','muscle',3.2],['epi','adrenal','liver|pancreas|fat',1.6],['glc','liver','pool',1.4],['glc','pool','brain',.9]] },
+    { t:15, when:'운동 15분', tag:'α2 브레이크', focus:['pancreas','adrenal'], nerves:['symp'],
+      title:'그래서 췌장은 인슐린을 줄여요',
+      body:'아드레날린이 β세포의 α2-아드레날린 수용체에 작용해 인슐린 분비에 브레이크를 걸어요. 근육은 이미 인슐린 없이 포도당을 가져가고 있어요. 여기서 인슐린까지 높으면 혈당이 지나치게 떨어지고 간 창고도 열리지 않아요. 인슐린을 낮춰야 간이 포도당을 내보낼 수 있어요.',
+      mech:['아드레날린','β세포 α2 수용체','인슐린 분비 ↓','간 포도당 방출 허용'],
+      st:{ pancreas:['α2 → 인슐린 ↓','글루카곤 ↑'] },
+      hor:H(.1,.42,.04,.7),
+      flows:[['epi','adrenal','pancreas|pancreas|liver',2.6],['ins','pancreas','muscle|liver',.3],['glc','pool','muscle',3],['glc','liver','pool',1.8],['glc','pool','brain',.9]] },
+    { t:30, when:'운동 30분', tag:'간 글리코겐 분해', focus:['liver','muscle'], nerves:['symp'],
+      title:'근육이 쓴 만큼 간이 채워 넣어요',
+      body:'카테콜아민과 글루카곤, 그리고 낮아진 인슐린이 함께 간의 글리코겐 분해를 촉진해요. 근육이 가져가는 만큼 간이 내보내기 때문에 건강한 사람은 운동 중에도 혈당이 거의 일정해요. 뇌도 이 와중에 포도당을 계속 받아요.',
+      mech:['아드레날린 · 글루카곤 ↑ · 인슐린 ↓','간 글리코겐 분해','포도당 방출 ↑','혈당 유지'],
+      st:{ liver:['글리코겐 분해','포도당 방출 ↑'], muscle:['포도당 흡수 ↑','글리코겐 ↓'] },
+      stores:{ liver:.55, muscle:.55 },
+      hor:H(.1,.46,.04,.7),
+      flows:[['glc','liver','pool',3.2],['glc','pool','muscle',3.2],['gcg','pancreas','liver',1.4],['epi','adrenal','liver',1.4],['glc','pool','brain',.9]] },
+    { t:45, when:'운동 45분', tag:'지방분해', focus:['fat','muscle'], nerves:['symp'],
+      title:'지방도 연료로 꺼내 써요',
+      body:'낮은 인슐린과 높은 카테콜아민은 지방조직의 지방분해를 강하게 켜요. 나온 지방산은 근육으로 가서 연료가 되고, 운동이 길어질수록 지방산의 비중이 커져요. 글리세롤은 간으로 가서 포도당 재료가 돼요.',
+      mech:['인슐린 ↓ · 카테콜아민 ↑','지방분해 ↑','지방산 → 근육 연료','글리세롤 → 간'],
+      st:{ fat:['지방분해 ↑','지방산 방출'], muscle:['지방산 ＋','포도당 사용'] },
+      stores:{ fat:.58, liver:.45, muscle:.45 }, pools:{ ffa:6 },
+      hor:H(.08,.52,.04,.72),
+      flows:[['ffa','fat','muscle',2.6],['gly','fat','liver',.8],['epi','adrenal','fat|liver',1.4],['glc','liver','pool',2.6],['glc','pool','muscle',2.6],['glc','pool','brain',.9]] },
+    { t:75, when:'운동 75분', tag:'코리 회로', focus:['muscle','liver'], nerves:['symp'],
+      title:'오래 달리면 젖산을 다시 포도당으로 바꿔요',
+      body:'운동이 길어지면 글루카곤이 더 오르고, 간은 근육에서 나온 젖산(분홍 사각형)을 다시 포도당으로 만들어 근육에 돌려보내요. 이것을 코리 회로라고 해요. 알라닌과 글리세롤도 재료가 돼요. 간 글리코겐이 계속 줄면 혈당이 서서히 내려갈 수 있어서, 아주 긴 운동에는 탄수화물 보충이 필요해요.',
+      mech:['근육 젖산','간 포도당신생','새 포도당','다시 근육으로'],
+      st:{ liver:['포도당신생 ↑','젖산 → 포도당'], muscle:['젖산 방출','글리코겐 ↓'] },
+      stores:{ liver:.3, muscle:.28, fat:.52 }, pools:{ ffa:6 },
+      hor:H(.07,.66,.04,.76),
+      flows:[['lac','muscle','liver',2],['aa','muscle','liver',.6],['gcg','pancreas','liver',2],['glc','liver','pool',2.6],['glc','pool','muscle',2.6],['ffa','fat','muscle',2],['glc','pool','brain',.9]] },
+    { t:110, when:'운동 후 회복', tag:'회복', focus:['muscle'],
+      title:'운동 뒤 근육은 창고를 다시 채워요',
+      body:'운동 후 몇 시간에서 하루 정도는 근육의 인슐린 감수성이 높아져, 적은 인슐린으로도 GLUT4가 잘 올라와요. 근육은 비워진 글리코겐 창고를 다시 채워요. 이런 운동을 꾸준히 하면 인슐린 감수성이 장기적으로 좋아져요.',
+      mech:['운동 종료','인슐린 감수성 ↑','근육 글리코겐 재합성'],
+      st:{ brain:['교감신경 ↓',''], adrenal:['진정',''], muscle:['글리코겐 재합성','감수성 ↑'], pancreas:['인슐린 회복','글루카곤 기저'], liver:['글리코겐 보충',''], fat:['지방분해 ↓',''] },
+      glut:{ muscle:.75 }, stores:{ muscle:.45, liver:.35 }, pools:{ ffa:2 },
+      hor:H(.3,.32,.04,.15),
+      flows:[['glc','pool','muscle',2],['ins','pancreas','muscle|liver',1.2],['glc','liver','pool',.6],['glc','pool','brain',.9]] }
+  ],
+  dm: { title:'당뇨병·약국 포인트', items:[
+    '<b>인슐린·설포닐우레아 사용자</b>건강한 사람은 운동 중 인슐린을 스스로 줄이지만(α2 브레이크), 주사한 인슐린은 줄일 수 없고 SU는 혈당과 상관없이 분비를 계속 일으켜요. 그래서 운동량이 갑자기 늘면 운동 중·후 저혈당 위험이 커요.',
+    '<b>저혈당 대처</b>혈당이 70 mg/dL 미만이면 빠르게 흡수되는 탄수화물 약 15 g을 먹고 15분 뒤 다시 재요. 아카보스를 함께 복용 중이면 설탕 대신 포도당으로 교정해요.',
+    '<b>고강도 운동</b>카테콜아민이 강하게 나와 혈당이 일시적으로 오를 수도 있어요.',
+    '<b>예방 효과</b>DPP 연구에서 체중 7% 감량과 주 150분 신체활동으로 고위험군의 제2형 당뇨병 발생 상대위험이 58% 줄었어요.'
+  ]}
+}
+};
+
+/* ---------- 제2형 당뇨병에서 달라지는 생리 (각 시나리오 단계별) ---------- */
+const DMX = {
+meal: {
+  hi:260, curve:[[0,140],[10,150],[20,168],[30,190],[45,212],[60,225],[90,232],[120,215],[150,195],[180,178]],
+  base:{ st:{ liver:['포도당 과잉 방출','(공복부터 높음)'], pancreas:['인슐린 부족','글루카곤 높음'], muscle:['휴식','인슐린 저항성'], fat:['인슐린 저항성',''], kidney:['포도당 재흡수','(SGLT2)'] }, stores:{ liver:.4, muscle:.45 } },
+  steps:[
+    { note:'출발점부터 달라요. 간의 인슐린 저항성 때문에 밤사이 간이 포도당을 많이 내보내서, 밥을 먹기 전 혈당이 이미 높아요. 공복혈당이 126 mg/dL 이상이면 당뇨병 범위예요.',
+      st:{ liver:['포도당 과잉 방출','(공복부터 높음)'], pancreas:['인슐린 준비','글루카곤 높음'] },
+      hor:H(.34,.42,.1,.1),
+      flows:[['glc','gut','pool',.6],['glc','liver','pool',1.3],['gcg','pancreas','liver',.8],['glc','pool','brain',.9]] },
+    { note:'흡수 자체는 정상과 비슷해요. 하지만 간이 생산을 멈추지 않아서, 장에서 들어오는 포도당과 간에서 나오는 포도당이 함께 혈액에 쌓여요.',
+      st:{ liver:['생산 계속','(억제 안 됨)'] },
+      hor:H(.4,.42,.25,.1),
+      flows:[['glc','gut','pool',3.2],['glc','liver','pool',1.2],['gcg','pancreas','liver',.8],['glc','pool','brain',.9],['inc','gut','pancreas',.5],['ins','pancreas','liver|muscle|fat',.5]] },
+    { note:'인크레틴 효과가 줄어 있어요. 장의 신호를 받아도 β세포의 분비 증폭이 약하고, 식후에도 글루카곤이 충분히 억제되지 않아요. GLP-1 작용제와 DPP-4 억제제가 겨냥하는 지점이 바로 여기예요.',
+      st:{ pancreas:['증폭 약함','글루카곤 그대로'] },
+      hor:H(.45,.42,.55,.1),
+      flows:[['glc','gut','pool',3],['inc','gut','pancreas',2],['inc','gut','brain',.5],['ins','pancreas','liver|muscle|fat',.9],['gcg','pancreas','liver',.9],['glc','liver','pool',1.1],['glc','pool','brain',.9]] },
+    { note:'β세포가 포도당을 감지해도 빠른 1상 분비가 특히 약해요. 인슐린이 늦게, 부족하게 나오는 사이 혈당이 더 높이 올라가요. 병의 초기에는 인슐린 양이 오히려 정상보다 많을 수 있지만, 저항성을 이길 만큼은 아니에요.',
+      st:{ pancreas:['1상 분비 약함','글루카곤 과다'] },
+      hor:H(.55,.4,.5,.1),
+      flows:[['glc','gut','pool',2.6],['glc','pool','pancreas',1.4],['ins','pancreas','liver|muscle|fat',1.8],['inc','gut','pancreas',1],['gcg','pancreas','liver',.9],['glc','liver','pool',1],['glc','pool','brain',.9]] },
+    { note:'인슐린 열쇠는 도착하지만, 근육 안에 쌓인 DAG·세라마이드 같은 지방 대사물이 IRS → PI3K → Akt 신호를 방해해요. 그래서 GLUT4 문이 조금만 열리고 포도당이 혈액에 남아요. 지방조직도 지방분해가 충분히 멈추지 않아, 흘러나온 유리지방산이 간과 근육의 저항성을 더 키워요.',
+      st:{ muscle:['GLUT4 조금만','인슐린 저항성'], fat:['지방분해 계속','지방산 방출'] },
+      glut:{ muscle:.3, fat:.25 }, stores:{ muscle:.5 }, pools:{ ffa:4 },
+      hor:H(.62,.38,.4,.1),
+      flows:[['glc','gut','pool',1.6],['ins','pancreas','muscle|fat|muscle|liver',2.6],['glc','pool','muscle',1],['glc','pool','fat',.3],['ffa','fat','liver|muscle',1.2],['glc','liver','pool',.9],['glc','pool','brain',.9]] },
+    { note:'간도 인슐린 신호에 둔해서 포도당 생산을 충분히 멈추지 않아요. 혈액에는 연료가 넘치는데 연료공장이 계속 돌아가는 셈이에요. 혈당이 대략 180 mg/dL을 넘으면 신장의 재흡수 능력을 넘어서 소변으로 포도당이 새기 시작해요(신장 아래로 나가는 육각형). 포도당이 물을 끌고 나가 소변이 늘고 갈증이 생겨요.',
+      st:{ liver:['생산 덜 멈춤','글리코겐 저장 ↓'], kidney:['요당 시작','재흡수 한계 초과'] },
+      stores:{ liver:.5, muscle:.55 }, pools:{ ffa:4 }, urine:true,
+      hor:H(.58,.36,.25,.1),
+      flows:[['glc','gut','pool',.8],['ins','pancreas','liver|muscle',1.6],['glc','liver','pool',1.1],['glc','pool','liver',.6],['glc','pool','muscle',1],['glc','pool','brain',.9],['glc','pool','kidney',1.2],['ffa','fat','liver',.8]] },
+    { note:'정상인은 2~3시간이면 제자리로 돌아오지만, 제2형 당뇨병에서는 다음 식사 때까지도 높게 남을 수 있어요. 75 g 경구당부하 2시간 혈당이 200 mg/dL 이상이면 당뇨병으로 진단해요. 이런 고혈당이 반복되면 당독성으로 β세포가 더 지치는 악순환이 생겨요.',
+      st:{ pancreas:['인슐린 지속','글루카곤 높음'], muscle:['GLUT4 조금만','흡수 느림'], liver:['생산 계속',''], kidney:['요당',''] },
+      glut:{ muscle:.2, fat:.15 }, urine:true,
+      hor:H(.45,.4,.1,.1),
+      flows:[['glc','pool','brain',.9],['glc','pool','muscle',.6],['ins','pancreas','liver|muscle|fat',.9],['glc','liver','pool',.9],['glc','pool','kidney',.8],['gcg','pancreas','liver',.6],['glc','gut','pool',.3]] }
+  ]
+},
+fasting: {
+  hi:220, curve:[[3,178],[6,165],[10,155],[14,150],[24,142],[36,134],[48,126],[60,120],[72,115]],
+  base:{ st:{ liver:['과잉 생산','바로 재개'], pancreas:['인슐린 남음','글루카곤 과다'], muscle:['휴식','인슐린 저항성'], fat:['지방분해','많음'], kidney:['포도당 재흡수','(SGLT2)'] }, stores:{ liver:.65, muscle:.65 } },
+  steps:[
+    { note:'식후 혈당이 다 내려오기도 전에 공복으로 넘어가요. 간은 인슐린에 둔하고 글루카곤은 과해서, 흡수가 끝나자마자 필요 이상으로 포도당 생산을 다시 시작해요. 혈당이 180 mg/dL 근처라 요당도 조금 나와요.',
+      st:{ kidney:['요당 조금',''] }, urine:true,
+      hor:H(.4,.5,.05,.1),
+      flows:[['gcg','pancreas','liver',1.2],['ins','pancreas','liver|muscle|fat',.5],['glc','liver','pool',1.8],['glc','pool','brain',1],['glc','pool','kidney',.5]] },
+    { note:'밤사이 간이 포도당을 너무 많이 내보내는 것이 제2형 당뇨병에서 공복혈당이 높아지는 핵심 기전이에요. 간의 인슐린 저항성과 부적절하게 높은 글루카곤이 함께 작용해요. 메트포르민이 줄이는 것이 바로 이 과잉 생산이에요.',
+      st:{ liver:['밤새 과잉 생산','글리코겐 분해·신생'], pancreas:['인슐린 부족','글루카곤 과다'], kidney:['포도당 재흡수','(SGLT2)'] },
+      stores:{ liver:.5 },
+      hor:H(.3,.58,.04,.1),
+      flows:[['gcg','pancreas','liver',1.8],['glc','liver','pool',2.8],['glc','pool','brain',1.4],['glc','pool','muscle',.4]] },
+    { note:'인슐린이 지방분해를 잘 누르지 못해 유리지방산이 정상보다 많이 나와요. 이 지방산이 간으로 들어가면 포도당신생과 간 지방 축적을 부추기고, 근육에서는 인슐린 저항성을 더 악화시켜요.',
+      st:{ fat:['지방분해 과다','지방산 ↑↑'], liver:['지방산 유입','포도당신생 ↑'], muscle:['지방산 과다','저항성 ↑'] },
+      stores:{ liver:.4, fat:.62 }, pools:{ ffa:8 },
+      hor:H(.28,.58,.04,.1),
+      flows:[['ffa','fat','muscle',2.4],['ffa','fat','liver',1.6],['gly','fat','liver',1],['glc','liver','pool',2.3],['glc','pool','brain',1.4],['gcg','pancreas','liver',1.2]] },
+    { note:'포도당신생 재료가 넘쳐요. 지방에서 글리세롤이, 근육에서 알라닌·젖산이 들어오는데 인슐린의 브레이크는 약해요. 그래서 하루를 굶어도 혈당이 정상인만큼 내려가지 않아요.',
+      st:{ liver:['포도당신생 과다',''] },
+      pools:{ ffa:7 },
+      hor:H(.25,.65,.04,.15),
+      flows:[['lac','muscle','liver',1.1],['aa','muscle','liver',1.2],['gly','fat','liver',1.3],['glc','liver','pool',2.2],['glc','kidney','pool',.6],['ffa','fat','muscle|liver',2],['glc','pool','brain',1.4],['gcg','pancreas','liver',1.5]] },
+    { note:'제2형 당뇨병에서는 남아 있는 인슐린이 케톤 생성을 어느 정도 눌러줘서, 굶어도 보통 케톤산증까지 가지는 않아요. 반대로 인슐린이 거의 없는 제1형 당뇨병에서는 지방분해와 케톤 생성이 걷잡을 수 없이 늘어 당뇨병성 케톤산증(DKA)으로 갈 수 있어요. SGLT2 억제제를 먹으며 오래 굶으면 혈당이 높지 않아도 케톤산증이 생길 수 있어요.',
+      st:{ liver:['케톤 생성','인슐린이 일부 억제'] },
+      pools:{ ffa:6, ket:6 },
+      hor:H(.22,.62,.04,.15),
+      flows:[['ffa','fat','liver',1.6],['ket','liver','brain|brain|muscle',1.3],['glc','liver','pool',1.6],['glc','kidney','pool',.5],['glc','pool','brain',1.1],['aa','muscle','liver',.6],['gly','fat','liver',1]] },
+    { note:'약을 쓰지 않는 제2형 당뇨병 환자는 사흘을 굶어도 혈당이 저혈당까지 잘 떨어지지 않아요(방어선이 켜질 일이 적음). 위험한 건 인슐린이나 설포닐우레아를 쓰는 경우예요. 혈당이 떨어져도 그 인슐린은 줄지 않아 방어선의 첫 단계가 작동하지 않고, 반복 저혈당은 글루카곤·아드레날린 반응까지 둔하게 만들어요.',
+      st:{ pancreas:['인슐린 낮음','글루카곤 높음'], adrenal:['조용함',''], liver:['포도당 방출','계속'], brain:['포도당 사용',''] },
+      pools:{ ffa:5, ket:7 }, nerves:[],
+      hor:H(.2,.6,.04,.12),
+      flows:[['gcg','pancreas','liver',1.4],['glc','liver','pool',1.6],['glc','kidney','pool',.5],['glc','pool','brain',1.1],['ket','liver','brain',.8],['ffa','fat','liver|muscle',1.2]] }
+  ]
+},
+protein: {
+  hi:200, curve:[[0,138],[20,142],[40,148],[60,152],[90,150],[120,146],[150,142],[180,140]],
+  base:{ st:{ liver:['포도당 방출','(높은 수준)'], pancreas:['인슐린 기저','글루카곤 높음'], muscle:['휴식','인슐린 저항성'], kidney:['포도당 재흡수','(SGLT2)'] } },
+  steps:[
+    { note:'단백질이 아미노산으로 흡수되는 과정은 정상과 비슷해요. 다만 간의 포도당 과잉 생산 때문에 출발 혈당이 이미 높아요.',
+      hor:H(.36,.45,.15,.1),
+      flows:[['aa','gut','pool',3],['inc','gut','pancreas',.4],['glc','liver','pool',1.2],['glc','pool','brain',.8]] },
+    { note:'아미노산 자극에 대한 인슐린 반응은 비교적 남아 있는 편이에요. 하지만 인슐린 저항성 때문에 같은 인슐린으로 할 수 있는 일이 줄어요.',
+      st:{ pancreas:['인슐린 ↑','(효과는 약함)'] },
+      hor:H(.55,.5,.2,.1),
+      flows:[['aa','gut','pool',2.4],['aa','pool','pancreas',1.4],['ins','pancreas','muscle|liver|fat',2],['glc','liver','pool',1.2],['glc','pool','brain',.8]] },
+    { note:'여기서 차이가 커요. α세포 조절 이상 때문에 아미노산 자극에 글루카곤이 과하게 오르고, 혈당이 높은데도 억제되지 않아요. 간이 포도당을 더 내보내서 단백질 식사인데도 혈당이 조금 올라요. 이것이 부적절한 고글루카곤혈증이에요.',
+      st:{ pancreas:['글루카곤 ↑↑','억제 안 됨'], liver:['포도당 방출 ↑',''] },
+      hor:H(.55,.85,.2,.1),
+      flows:[['aa','gut','pool',1.8],['aa','pool','pancreas',1.4],['gcg','pancreas','liver',3],['ins','pancreas','muscle|liver',1.4],['glc','liver','pool',2],['glc','pool','muscle',.4],['glc','pool','brain',.8]] },
+    { note:'근육의 GLUT4 문은 여전히 조금만 열려 함께 들어오는 포도당이 적어요. 근육은 포도당을 받아줄 가장 큰 저장고라서, 근육량이 적을수록 혈당 조절이 더 어려워져요.',
+      st:{ muscle:['아미노산 흡수','GLUT4 조금만'] },
+      glut:{ muscle:.2 },
+      hor:H(.5,.75,.15,.1),
+      flows:[['aa','pool','muscle',2.4],['ins','pancreas','muscle',1.4],['glc','pool','muscle',.3],['aa','gut','pool',1.2],['glc','liver','pool',1.6],['gcg','pancreas','liver',1.4],['glc','pool','brain',.8]] },
+    { note:'글루카곤이 높게 남아 있으면 간은 아미노산 처리와 함께 포도당 생산도 계속 늘려요. 정상인에서는 인슐린이 이 포도당 쪽을 상쇄하지만, 제2형 당뇨병에서는 그 상쇄가 약해요.',
+      st:{ liver:['요소 생성','포도당 생산 ↑'] },
+      glut:{ muscle:.15 },
+      hor:H(.42,.7,.1,.1),
+      flows:[['aa','pool','liver',2.2],['gcg','pancreas','liver',2.4],['urea','liver','kidney',1.4],['glc','liver','pool',1.8],['glc','pool','brain',.8]] },
+    { note:'정상인은 단백질 식사 뒤 혈당이 거의 평평하지만, 제2형 당뇨병에서는 글루카곤 과다 때문에 완만하게 오를 수 있어요. 그래도 탄수화물 식사보다 오르는 폭은 훨씬 작아요.',
+      st:{ pancreas:['글루카곤 높음',''] },
+      hor:H(.38,.55,.06,.1),
+      flows:[['aa','pool','muscle|liver',.7],['urea','liver','kidney',.6],['glc','liver','pool',1.4],['gcg','pancreas','liver',1],['glc','pool','brain',.8]] }
+  ]
+},
+exercise: {
+  hi:180, curve:[[0,150],[5,150],[10,146],[20,140],[30,135],[45,128],[60,122],[75,118],[90,115],[100,117],[110,120],[120,122]],
+  base:{ st:{ liver:['포도당 방출','(높은 수준)'], pancreas:['인슐린 부족','글루카곤 높음'], muscle:['휴식','인슐린 저항성'], kidney:['포도당 재흡수','(SGLT2)'] } },
+  steps:[
+    { note:'운동을 시작할 때의 교감신경 반응은 정상인과 비슷해요. 다만 출발 혈당이 높고, 근육은 평소 인슐린에 잘 반응하지 않는 상태예요.',
+      hor:H(.35,.42,.04,.6),
+      flows:[['epi','adrenal','liver|pancreas|fat|muscle',2.4],['glc','liver','pool',1.2],['glc','pool','brain',.9],['glc','pool','muscle',.8]] },
+    { note:'가장 중요한 포인트예요. 인슐린 저항성이 있어도 근육 수축으로 GLUT4가 올라오는 경로는 비교적 잘 남아 있어요. 그래서 제2형 당뇨병 환자에게 운동은 인슐린 신호를 우회해 혈당을 끌어내리는 강력한 도구예요.',
+      st:{ muscle:['수축 → GLUT4','저항성 우회'] },
+      hor:H(.3,.45,.04,.65),
+      flows:[['glc','pool','muscle',3.6],['epi','adrenal','liver|pancreas|fat',1.6],['glc','liver','pool',1.4],['glc','pool','brain',.9]] },
+    { note:'아드레날린 브레이크는 정상인처럼 작동해요. 하지만 인슐린 주사나 설포닐우레아를 쓰는 사람은 달라요. 이미 몸에 들어온 인슐린(또는 SU가 계속 끌어내는 분비)은 이 브레이크로 줄일 수 없어서, 근육 흡수와 겹쳐 운동 중·후 저혈당이 생길 수 있어요.',
+      hor:H(.2,.48,.04,.7),
+      flows:[['epi','adrenal','pancreas|pancreas|liver',2.6],['ins','pancreas','muscle|liver',.4],['glc','pool','muscle',3.4],['glc','liver','pool',1.6],['glc','pool','brain',.9]] },
+    { note:'정상인은 근육이 쓰는 만큼 간이 채워서 혈당이 일정하지만, 제2형 당뇨병에서는 근육이 가져가는 양이 간이 내보내는 양보다 많아져 혈당이 실제로 내려가요. 높던 혈당이 정상 쪽으로 다가가는 구간이에요.',
+      st:{ muscle:['포도당 흡수 ↑↑','혈당 ↓'] },
+      hor:H(.18,.5,.04,.7),
+      flows:[['glc','liver','pool',2.2],['glc','pool','muscle',3.8],['gcg','pancreas','liver',1.2],['epi','adrenal','liver',1.4],['glc','pool','brain',.9]] },
+    { note:'운동 중에는 지방분해가 늘어 몸에 쌓인 지방도 연료로 쓰여요. 꾸준한 운동과 체중 감량으로 내장지방과 간·근육에 쌓인 지방이 줄면 인슐린 저항성 자체가 좋아져요.',
+      pools:{ ffa:7 },
+      hor:H(.15,.55,.04,.72),
+      flows:[['ffa','fat','muscle',2.8],['gly','fat','liver',.9],['epi','adrenal','fat|liver',1.4],['glc','liver','pool',2],['glc','pool','muscle',3],['glc','pool','brain',.9]] },
+    { note:'오래 운동할수록 혈당이 계속 내려가요. 약을 쓰지 않는다면 대개 문제없지만, 인슐린·SU 사용자는 이 구간에 저혈당 위험이 커서 운동 전후 혈당 확인과 간식 계획이 필요해요.',
+      pools:{ ffa:6 },
+      hor:H(.12,.66,.04,.76),
+      flows:[['lac','muscle','liver',2],['aa','muscle','liver',.6],['gcg','pancreas','liver',2],['glc','liver','pool',2.2],['glc','pool','muscle',2.8],['ffa','fat','muscle',2],['glc','pool','brain',.9]] },
+    { note:'운동 뒤 몇 시간에서 하루 정도는 인슐린 감수성이 좋아져 혈당이 낮게 유지돼요. DPP 연구에서는 주 150분 신체활동과 체중 7% 감량으로 고위험군의 제2형 당뇨병 발생 상대위험이 58% 줄었어요.',
+      st:{ muscle:['감수성 ↑','글리코겐 재합성'] },
+      hor:H(.38,.4,.04,.15),
+      flows:[['glc','pool','muscle',2.2],['ins','pancreas','muscle|liver',1.2],['glc','liver','pool',.8],['glc','pool','brain',.9]] }
+  ]
+}
+};
+
+/* ---------- 제1형 당뇨병 (인슐린이 부족한 상태) ---------- */
+const DMX1 = {
+meal: {
+  hi:420, curve:[[0,250],[10,262],[20,285],[30,310],[45,340],[60,360],[90,380],[120,385],[150,380],[180,375]],
+  base:{ lock:['pancreas'], st:{ pancreas:['β세포 파괴됨','글루카곤 과다'], liver:['포도당 과잉 방출','(인슐린 없음)'], muscle:['GLUT4 안쪽','(인슐린 없음)'], fat:['지방분해 ↑','(브레이크 없음)'], kidney:['요당 ↑↑','삼투성 이뇨'] }, stores:{ liver:.3, muscle:.3, fat:.45 }, glut:{ muscle:0, fat:0 } },
+  steps:[
+    { note:'제1형 당뇨병은 면역계가 췌장의 β세포를 공격해 파괴하는 자가면역질환이에요(지도에서 회색으로 지워진 β세포). 인슐린이 절대적으로 부족해서, 식사 준비 신호가 와도 내보낼 인슐린이 없어요. 여기서는 인슐린을 맞지 않은 상태를 보여줘요. 실제 환자는 기저·식사 인슐린 주사로 이 부족을 채워요.',
+      st:{ pancreas:['β세포 파괴됨','신호 받을 곳 없음'] },
+      hor:H(.03,.6,.1,.1), urine:true,
+      flows:[['glc','gut','pool',.6],['glc','liver','pool',1.8],['gcg','pancreas','liver',1.2],['glc','pool','brain',.9],['glc','pool','kidney',1.2]] },
+    { note:'흡수된 포도당은 정상처럼 들어오지만 받아줄 곳이 거의 없어요. 간은 인슐린 신호가 없으니 식사 중에도 포도당을 계속 만들어 내보내요.',
+      st:{ liver:['포도당 계속 생산','(인슐린 없음)'] },
+      hor:H(.03,.62,.3,.1), urine:true,
+      flows:[['glc','gut','pool',3.2],['glc','liver','pool',1.6],['gcg','pancreas','liver',1.2],['glc','pool','brain',.9],['inc','gut','pancreas',.5],['glc','pool','kidney',1.4]] },
+    { note:'장은 정상처럼 GIP·GLP-1을 내보내지만, 분비를 증폭해 줄 β세포가 없어서 인슐린이 늘지 않아요. 오히려 식후에 글루카곤이 과하게 올라가는 반응이 나타나 혈당을 더 밀어 올려요.',
+      st:{ pancreas:['증폭할 β세포 없음','글루카곤 ↑'] },
+      hor:H(.03,.7,.7,.1), urine:true,
+      flows:[['glc','gut','pool',3],['inc','gut','pancreas',2],['inc','gut','brain',.6],['gcg','pancreas','liver',1.8],['glc','liver','pool',1.6],['glc','pool','brain',.9],['glc','pool','kidney',1.4]] },
+    { note:'혈당이 아무리 올라도 GCK → ATP → KATP로 이어지는 포도당 센서를 가진 β세포가 남아 있지 않아요. 그래서 설포닐우레아처럼 β세포를 자극하는 약은 제1형에 효과가 없어요. 인슐린을 밖에서 넣어줘야만 해요.',
+      st:{ pancreas:['인슐린 분비 없음','글루카곤 과다'] },
+      hor:H(.03,.68,.6,.1), urine:true,
+      flows:[['glc','gut','pool',2.6],['glc','pool','pancreas',1],['gcg','pancreas','liver',1.6],['inc','gut','pancreas',1],['glc','liver','pool',1.6],['glc','pool','brain',.9],['glc','pool','kidney',1.6]] },
+    { note:'인슐린 열쇠가 오지 않으니 근육·지방의 GLUT4 문이 아예 열리지 않아요. 연료는 혈액에 넘치는데 세포는 굶는 상태예요. 지방조직은 브레이크가 풀려 지방분해가 계속되고, 근육은 단백질을 분해해요. 그래서 많이 먹어도 체중이 줄 수 있어요.',
+      st:{ muscle:['GLUT4 닫힘','단백질 분해 ↑'], fat:['지방분해 ↑↑','지방산 방출'] },
+      glut:{ muscle:0, fat:0 }, stores:{ muscle:.3, fat:.45 }, pools:{ ffa:7 },
+      hor:H(.03,.66,.45,.1), urine:true,
+      flows:[['glc','gut','pool',1.6],['ffa','fat','liver|muscle',2],['aa','muscle','liver',1],['glc','pool','muscle',.3],['glc','liver','pool',1.6],['glc','pool','brain',.9],['glc','pool','kidney',1.6]] },
+    { note:'간은 글리코겐을 쌓지 못하고, 근육에서 온 아미노산과 지방에서 온 글리세롤로 포도당신생까지 계속해요. 혈당이 신장의 재흡수 한계를 크게 넘어 소변으로 포도당이 많이 빠져나가고, 포도당이 물을 끌고 나가 다뇨·다음·탈수가 생겨요.',
+      st:{ liver:['포도당신생 계속','글리코겐 못 쌓음'], muscle:['GLUT4 닫힘','단백질 분해 ↑'] },
+      stores:{ liver:.25, muscle:.3 }, pools:{ ffa:7 },
+      hor:H(.03,.62,.25,.1), urine:true,
+      flows:[['glc','gut','pool',.8],['aa','muscle','liver',1],['gly','fat','liver',1],['glc','liver','pool',1.8],['glc','pool','brain',.9],['glc','pool','kidney',2.2],['ffa','fat','liver',1.4],['gcg','pancreas','liver',1.2]] },
+    { note:'정상인처럼 제자리로 돌아오지 않아요. 지방산이 간으로 계속 들어가 케톤체 생성도 늘기 시작해요. 실제 환자는 식사 직전 초속효성 인슐린(노보래피드·휴마로그 등)으로 이 식후 상승을 막고, 그 용량을 식사량에 맞춰 스스로 정해야 해요.',
+      st:{ liver:['케톤 생성 시작',''], muscle:['GLUT4 닫힘',''], pancreas:['인슐린 없음','글루카곤 높음'], fat:['지방분해 ↑',''] },
+      glut:{ muscle:0, fat:0 }, pools:{ ffa:7, ket:4 },
+      hor:H(.03,.6,.1,.1), urine:true,
+      flows:[['ffa','fat','liver',1.6],['ket','liver','brain|muscle',.8],['glc','liver','pool',1.6],['glc','pool','brain',.9],['glc','pool','kidney',2],['gcg','pancreas','liver',1]] }
+  ]
+},
+fasting: {
+  hi:500, curve:[[3,290],[6,280],[10,275],[14,280],[24,310],[36,350],[48,390],[60,430],[72,460]],
+  base:{ lock:['pancreas'], st:{ liver:['포도당 과잉 생산','(인슐린 없음)'], pancreas:['β세포 파괴됨','글루카곤 과다'], muscle:['단백질 분해 ↑',''], fat:['지방분해 ↑↑',''], kidney:['요당 ↑↑','삼투성 이뇨'] }, stores:{ liver:.35, muscle:.4, fat:.45 } },
+  steps:[
+    { note:'흡수가 끝나도 혈당이 내려오지 않아요. 인슐린이 없으니 간의 포도당 생산이 처음부터 브레이크 없이 돌아가고, 소변으로 포도당과 물이 계속 빠져나가요.',
+      pools:{ ffa:5 }, hor:H(.03,.65,.05,.1), urine:true,
+      flows:[['gcg','pancreas','liver',1.4],['glc','liver','pool',2.2],['glc','pool','brain',1],['glc','pool','kidney',1.8]] },
+    { note:'밤사이 간은 글리코겐 분해와 포도당신생을 최대로 돌려요. 정상인은 공복에도 남아 있는 기저 인슐린이 이 속도를 조절하는데, 제1형에서는 그 조절이 없어요. 실제 환자가 맞는 기저 인슐린(란투스·트레시바 등)이 맡는 일이 바로 이 조절이에요.',
+      st:{ liver:['생산 최대','브레이크 없음'] },
+      pools:{ ffa:6 }, hor:H(.03,.7,.04,.1), urine:true,
+      flows:[['gcg','pancreas','liver',2],['glc','liver','pool',2.8],['glc','pool','brain',1.4],['glc','pool','kidney',1.8]] },
+    { note:'인슐린이 없으면 지방분해 브레이크가 완전히 풀려요. 유리지방산이 정상보다 훨씬 많이 쏟아져 나와 간으로 몰려가요. 케톤산증으로 가는 첫 단계예요.',
+      st:{ fat:['지방분해 폭주','지방산 ↑↑↑'], liver:['지방산 대량 유입',''], muscle:['지방산 사용',''] },
+      stores:{ fat:.38 }, pools:{ ffa:11 }, hor:H(.03,.72,.04,.12), urine:true,
+      flows:[['ffa','fat','liver',2.8],['ffa','fat','muscle',2],['gly','fat','liver',1.2],['glc','liver','pool',2.6],['glc','pool','brain',1.4],['glc','pool','kidney',1.8],['gcg','pancreas','liver',1.6]] },
+    { note:'근육 단백질 분해도 멈추지 않아 알라닌이 간으로 쏟아지고, 간은 포도당을 계속 새로 만들어요. 굶고 있는데도 혈당이 오히려 올라가요. 소변으로 물이 빠져 탈수가 심해지면 신장으로 가는 혈류도 줄어요.',
+      st:{ muscle:['단백질 분해 ↑↑','알라닌 방출'], liver:['포도당신생 ↑↑','케톤 생성 ↑'], kidney:['요당 ↑↑','탈수'] },
+      stores:{ muscle:.3, liver:.2 }, pools:{ ffa:11, ket:6 }, hor:H(.03,.78,.04,.25), urine:true,
+      flows:[['aa','muscle','liver',2],['lac','muscle','liver',.8],['gly','fat','liver',1.4],['ffa','fat','liver',2.4],['glc','liver','pool',2.8],['glc','kidney','pool',.6],['ket','liver','brain|muscle',1.2],['glc','pool','brain',1.4],['glc','pool','kidney',1.8],['gcg','pancreas','liver',1.8]] },
+    { note:'이제 케톤체가 쓰이는 속도보다 훨씬 빨리 만들어져 혈액에 쌓여요. 케톤체는 산이라서 혈액이 산성으로 기울어요. 이것이 당뇨병성 케톤산증(DKA)이에요. 오심·구토·복통, 깊고 빠른 호흡, 과일 냄새 같은 입 냄새, 의식 저하가 나타날 수 있어 응급 치료가 필요해요.',
+      st:{ liver:['케톤 대량 생산','→ 케톤산증'], muscle:['단백질 분해 ↑',''], brain:['케톤 과다','의식 저하 위험'], kidney:['요당·케톤뇨','탈수'] },
+      stores:{ fat:.3 }, pools:{ ffa:11, ket:16 }, hor:H(.03,.85,.04,.4), urine:true,
+      flows:[['ffa','fat','liver',3],['ket','liver','brain|muscle|kidney',3],['glc','liver','pool',2.4],['aa','muscle','liver',1.4],['glc','pool','brain',1.2],['glc','pool','kidney',1.6],['gcg','pancreas','liver',1.8],['epi','adrenal','liver|fat',1]] },
+    { note:'스트레스 호르몬(아드레날린 등)까지 올라 지방분해와 간의 포도당 생산을 더 키우는 악순환이에요. 치료는 수액·인슐린·전해질 교정이에요. 반대로 인슐린을 맞는 제1형 환자가 굶으면 문제가 뒤집혀요. 주사한 인슐린은 저절로 줄지 않고, α세포의 저혈당 글루카곤 반응까지 약해져 있어 심한 저혈당이 올 수 있어요. 그때는 처방된 응급 글루카곤과 즉시 응급 대응이 필요해요.',
+      st:{ adrenal:['스트레스 호르몬 ↑',''], pancreas:['β세포 없음','글루카곤 ↑↑'], brain:['산증·탈수','의식 저하'], liver:['포도당·케톤','계속 방출'] },
+      nerves:['symp'], pools:{ ffa:11, ket:18 }, hor:H(.03,.88,.04,.65), urine:true,
+      flows:[['epi','adrenal','liver|fat',2.2],['ffa','fat','liver',3],['ket','liver','brain|muscle|kidney',3.2],['glc','liver','pool',2.6],['glc','pool','brain',1.1],['glc','pool','kidney',1.4],['gcg','pancreas','liver',2]] }
+  ]
+},
+protein: {
+  hi:340, curve:[[0,250],[20,262],[40,278],[60,290],[90,298],[120,300],[150,298],[180,296]],
+  base:{ lock:['pancreas'], st:{ pancreas:['β세포 파괴됨','글루카곤 높음'], liver:['포도당 과잉 방출',''], muscle:['GLUT4 닫힘',''], kidney:['요당 ↑↑','삼투성 이뇨'] }, stores:{ liver:.3, muscle:.35, fat:.45 } },
+  steps:[
+    { note:'단백질은 정상처럼 아미노산으로 흡수돼요. 하지만 출발 혈당부터 높고, 인슐린이 없어 근육이 아미노산을 단백질로 쌓기 어려워요.',
+      pools:{ aa:12 }, hor:H(.03,.62,.15,.1), urine:true,
+      flows:[['aa','gut','pool',3],['inc','gut','pancreas',.4],['glc','liver','pool',1.6],['glc','pool','brain',.8],['glc','pool','kidney',1.2]] },
+    { note:'아미노산이 β세포를 자극하려 해도 반응할 β세포가 없어요. 탄수화물이 없는 식사인데도 인슐린이 전혀 오르지 않아요.',
+      st:{ pancreas:['인슐린 반응 없음','글루카곤 ↑'] },
+      pools:{ aa:15 }, hor:H(.03,.7,.2,.1), urine:true,
+      flows:[['aa','gut','pool',2.4],['aa','pool','pancreas',1.4],['gcg','pancreas','liver',1.6],['glc','liver','pool',1.8],['glc','pool','brain',.8],['glc','pool','kidney',1.2]] },
+    { note:'아미노산은 α세포만 자극해 글루카곤만 크게 올라가요. 정상인에서는 인슐린과 글루카곤이 함께 올라 균형을 맞추지만, 제1형에서는 글루카곤 한쪽으로만 기울어 단백질만 먹어도 혈당이 올라가요.',
+      st:{ pancreas:['글루카곤만 ↑↑','균형 깨짐'], liver:['포도당 방출 ↑↑',''] },
+      pools:{ aa:15 }, hor:H(.03,.92,.2,.1), urine:true,
+      flows:[['aa','gut','pool',1.8],['aa','pool','pancreas',1.4],['gcg','pancreas','liver',3.2],['glc','liver','pool',2.6],['glc','pool','brain',.8],['glc','pool','kidney',1.4]] },
+    { note:'인슐린이 없으면 근육은 아미노산으로 단백질을 짓기보다 오히려 분해 쪽으로 기울어요. 그래서 치료받지 않은 제1형 당뇨병에서는 근육이 빠지고 체중이 줄어요.',
+      st:{ muscle:['단백질 합성 ↓','분해 ↑'] },
+      glut:{ muscle:0 }, pools:{ aa:13 }, hor:H(.03,.85,.15,.1), urine:true,
+      flows:[['aa','pool','muscle',.6],['aa','muscle','liver',1],['glc','liver','pool',2.4],['gcg','pancreas','liver',2],['glc','pool','brain',.8],['glc','pool','kidney',1.4]] },
+    { note:'높은 글루카곤 때문에 간은 아미노산을 분해해 요소를 만들면서, 남은 탄소 뼈대로 포도당까지 새로 만들어요. 식사로 들어온 단백질이 근육이 아니라 혈당으로 바뀌는 셈이에요.',
+      st:{ liver:['아미노산 → 포도당','요소 생성 ↑'], muscle:['단백질 합성 ↓',''] },
+      glut:{ muscle:0 }, pools:{ aa:8 }, hor:H(.03,.8,.1,.1), urine:true,
+      flows:[['aa','pool','liver',2.4],['gcg','pancreas','liver',2.4],['urea','liver','kidney',1.6],['glc','liver','pool',2.6],['glc','pool','brain',.8],['glc','pool','kidney',1.4]] },
+    { note:'정상인은 단백질 식사 뒤 혈당이 평평하지만, 인슐린이 없으면 글루카곤만 작동해 혈당이 꾸준히 올라요. 그래서 제1형 환자는 탄수화물뿐 아니라 고단백·고지방 식사 뒤에 늦게 오르는 혈당도 신경 써야 해요.',
+      st:{ pancreas:['글루카곤 높음',''], muscle:['GLUT4 닫힘',''] },
+      glut:{ muscle:0 }, pools:{ aa:3 }, hor:H(.03,.7,.06,.1), urine:true,
+      flows:[['aa','pool','liver',.8],['urea','liver','kidney',.8],['glc','liver','pool',2],['gcg','pancreas','liver',1.4],['glc','pool','brain',.8],['glc','pool','kidney',1.4]] }
+  ]
+},
+exercise: {
+  hi:380, curve:[[0,260],[5,262],[10,268],[20,278],[30,288],[45,300],[60,312],[75,322],[90,330],[100,332],[110,330],[120,328]],
+  base:{ lock:['pancreas'], st:{ pancreas:['β세포 파괴됨','글루카곤 높음'], liver:['포도당 과잉 방출',''], muscle:['휴식','GLUT4 안쪽'], fat:['지방분해 ↑',''], kidney:['요당 ↑↑','삼투성 이뇨'] }, stores:{ liver:.4, muscle:.4, fat:.45 } },
+  steps:[
+    { note:'인슐린이 부족한 상태에서 운동을 시작하면, 교감신경과 아드레날린이 간의 포도당 방출과 지방분해를 강하게 켜는데 이를 눌러줄 인슐린이 없어요.',
+      pools:{ ffa:6 }, hor:H(.03,.62,.04,.6), urine:true,
+      flows:[['epi','adrenal','liver|fat|muscle',2.4],['glc','liver','pool',2],['glc','pool','brain',.9],['glc','pool','muscle',.8],['glc','pool','kidney',1.2]] },
+    { note:'근육 수축으로 GLUT4가 올라오는 경로는 인슐린이 없어도 작동해서 근육이 포도당을 어느 정도 가져가요. 하지만 간이 내보내는 양이 더 많아서 혈당은 내려가지 않아요.',
+      st:{ muscle:['수축 → GLUT4','포도당 흡수'] },
+      pools:{ ffa:7 }, hor:H(.03,.66,.04,.65), urine:true,
+      flows:[['glc','pool','muscle',2.6],['epi','adrenal','liver|fat',1.8],['glc','liver','pool',3],['glc','pool','brain',.9],['glc','pool','kidney',1.2]] },
+    { note:'정상인은 여기서 인슐린 브레이크를 걸어 균형을 맞추지만, 제1형에는 줄일 인슐린이 처음부터 없어요. 반대로 인슐린을 맞은 환자는 이미 들어간 인슐린을 줄일 수 없어서, 운동 중·후 저혈당이 제1형 운동에서 가장 흔한 문제예요.',
+      st:{ pancreas:['줄일 인슐린 없음','글루카곤 ↑'] },
+      pools:{ ffa:8 }, hor:H(.03,.7,.04,.7), urine:true,
+      flows:[['epi','adrenal','liver|fat|pancreas',2.4],['glc','pool','muscle',2.6],['glc','liver','pool',3],['glc','pool','brain',.9],['glc','pool','kidney',1.2]] },
+    { note:'아드레날린과 글루카곤이 간의 포도당 방출을 끌어올리는데 인슐린의 견제가 없어요. 근육이 쓰는 양보다 간이 내보내는 양이 많아 운동 중에 혈당이 오히려 올라가요.',
+      st:{ liver:['포도당 방출 ↑↑','견제 없음'] },
+      pools:{ ffa:8 }, hor:H(.03,.74,.04,.72), urine:true,
+      flows:[['glc','liver','pool',3.6],['glc','pool','muscle',2.6],['gcg','pancreas','liver',1.8],['epi','adrenal','liver',1.6],['glc','pool','brain',.9],['glc','pool','kidney',1.4]] },
+    { note:'지방분해도 견제 없이 커져 지방산이 간으로 몰리고 케톤체가 늘어요. 그래서 혈당이 매우 높거나 케톤이 있을 때는 운동을 미루는 것이 안전해요. 운동이 오히려 고혈당과 케톤증을 악화시킬 수 있어요.',
+      st:{ fat:['지방분해 ↑↑',''], liver:['케톤 생성 ↑',''] },
+      pools:{ ffa:11, ket:8 }, hor:H(.03,.76,.04,.74), urine:true,
+      flows:[['ffa','fat','liver',2.6],['ffa','fat','muscle',2],['ket','liver','muscle|brain',1.6],['epi','adrenal','fat|liver',1.4],['glc','liver','pool',3.2],['glc','pool','muscle',2.4],['glc','pool','brain',.9],['glc','pool','kidney',1.4]] },
+    { note:'오래 운동할수록 젖산·알라닌까지 포도당신생 재료로 쓰여 혈당과 케톤이 함께 높아지고, 탈수도 겹쳐요.',
+      st:{ liver:['포도당신생 ↑↑','케톤 ↑'] },
+      pools:{ ffa:11, ket:10 }, hor:H(.03,.8,.04,.76), urine:true,
+      flows:[['lac','muscle','liver',2],['aa','muscle','liver',.8],['gcg','pancreas','liver',2],['glc','liver','pool',3],['glc','pool','muscle',2.4],['ffa','fat','liver|muscle',2.4],['ket','liver','muscle|brain',1.6],['glc','pool','brain',.9],['glc','pool','kidney',1.4]] },
+    { note:'운동이 끝나도 인슐린이 없으면 근육은 비워진 글리코겐 창고를 채우지 못해요. 인슐린 치료 중인 환자에서는 반대로, 운동 뒤 좋아진 인슐린 감수성 때문에 몇 시간 뒤나 밤사이에 늦은 저혈당이 올 수 있어요. 그래서 운동하는 날은 인슐린 감량과 간식 계획이 필요해요.',
+      st:{ muscle:['글리코겐 못 채움',''], adrenal:['진정',''], brain:['교감신경 ↓',''], liver:['포도당 과잉 방출',''], fat:['지방분해 ↑',''] },
+      glut:{ muscle:.5 }, pools:{ ffa:6, ket:6 }, hor:H(.03,.6,.04,.15), urine:true,
+      flows:[['glc','pool','muscle',.8],['glc','liver','pool',2],['ffa','fat','liver',1.4],['ket','liver','muscle|brain',.8],['glc','pool','brain',.9],['glc','pool','kidney',1.4]] }
+  ]
+}
+};
+const DMS = { t2:DMX, t1:DMX1 };
+const DMNAME = { t2:'제2형 당뇨병', t1:'제1형 당뇨병' };
+
+/* ---------- 약물 작용: 제2형 당뇨병 기준 상태 ---------- */
+const T2 = {
+  meal: {
+    label:'제2형 당뇨병 · 식후 60분', t:60, T:180, unit:'식후 시간(분)', ticks:[0,30,60,90,120,150,180],
+    normal: SCN.meal.curve,
+    curve: [[0,140],[30,190],[60,225],[90,232],[120,215],[150,195],[180,178]],
+    st: { brain:['포도당 사용',''], liver:['포도당 계속 방출','억제 부족'], pancreas:['인슐린 부족·지연','글루카곤 과다'], gut:['포도당 흡수 ↑','인크레틴 효과 ↓'], muscle:['GLUT4 반응 ↓','인슐린 저항성'], fat:['인슐린 저항성','지방분해 계속'], adrenal:['조용함',''], kidney:['포도당 재흡수','(SGLT2)'] },
+    stores: { liver:.4, muscle:.45, fat:.6 }, glut: { muscle:.3, fat:.25 }, food:'carb', pools:{},
+    hor: H(.55,.45,.35,.1), focus:['muscle','fat','liver','pancreas'],
+    flows: [['glc','gut','pool',3],['glc','liver','pool',1.3],['gcg','pancreas','liver',1.2],['ins','pancreas','muscle|fat|liver',1.6],['glc','pool','muscle',1],['glc','pool','brain',.9],['inc','gut','pancreas',1.2]],
+    title:'제2형 당뇨병, 약 없이 밥을 먹으면',
+    body:'근육·지방은 인슐린 열쇠가 와도 GLUT4 문이 잘 열리지 않고(인슐린 저항성), 간은 식후에도 포도당을 계속 내보내요. β세포의 초기 분비는 약하고 글루카곤은 제대로 억제되지 않아요. 장의 인크레틴 효과도 줄어 있어요. 그래서 식후 혈당이 200 mg/dL을 넘게 올라가요. 「약 복용」을 눌러 {약}의 작용과 비교해 보세요.',
+    mech:['인슐린 저항성 (GLUT4 ↓)','간 포도당 생산 억제 부족','β세포 분비 부족','글루카곤 과다']
+  },
+  fasting: {
+    label:'제2형 당뇨병 · 새벽 공복', t:6, T:8, unit:'잠든 뒤(시간)', ticks:[0,2,4,6,8],
+    normal: [[0,92],[2,89],[4,87],[6,87],[8,88]],
+    curve: [[0,150],[2,147],[4,146],[6,150],[8,156]],
+    st: { brain:['포도당 사용',''], liver:['밤새 과잉 생산','저항성·글루카곤'], pancreas:['인슐린 부족','글루카곤 과다'], gut:['흡수 끝',''], muscle:['휴식',''], fat:['지방분해 ↑','지방산 과다'], adrenal:['조용함',''], kidney:['포도당 재흡수','(SGLT2)'] },
+    stores: { liver:.55, muscle:.6, fat:.65 }, glut: { muscle:0, fat:0 }, food:null, pools:{ ffa:5 },
+    hor: H(.3,.55,.04,.1), focus:['liver','pancreas'],
+    flows: [['glc','liver','pool',2.6],['gcg','pancreas','liver',1.4],['glc','pool','brain',1],['glc','pool','muscle',.4],['ffa','fat','liver|muscle',1]],
+    title:'제2형 당뇨병, 약 없이 밤을 보내면',
+    body:'자는 동안 간은 인슐린 저항성과 과한 글루카곤 때문에 필요보다 많은 포도당을 계속 만들어 내보내요. 새벽으로 갈수록 혈당이 더 오르기도 해요. 그래서 아침 공복혈당이 126 mg/dL 이상(당뇨병 범위)으로 나와요. 「약 복용」을 눌러 {약}의 작용과 비교해 보세요.',
+    mech:['간 인슐린 저항성','글루카곤 과다','밤새 포도당 과잉 방출','공복혈당 ↑']
+  }
+};
+
+/* ---------- 약물 10종 ---------- */
+const DRUGS = [
+  { short:'메트포르민', ctx:'fasting', route:'경구', tag:'간', targets:['liver'], focus:['liver'],
+    products:'메트포르민 — 다이아벡스, 글루코파지 (XR·SR 서방정 있음)',
+    title:'간이라는 연료공장의 과잉 생산을 줄여요',
+    body:'제2형 당뇨병에서는 간의 인슐린 저항성 때문에 밤새 간이 포도당을 너무 많이 내보내요. 메트포르민은 간의 포도당 생산, 특히 포도당신생을 줄여 공복혈당을 낮춰요. 미토콘드리아 에너지 대사 변화, AMPK 관련·비관련 경로, 장에서의 작용이 함께 관여하고, AMPK 하나로 다 설명되지는 않아요. 인슐린 분비를 늘리는 약이 아니어서 단독으로는 저혈당이 거의 없어요.',
+    mech:['장에서 흡수 → 간','미토콘드리아 에너지 대사 변화','포도당신생 ↓','간 포도당 방출 ↓','공복혈당 ↓'],
+    rxFlows:[['rx','gut','liver',1.2]],
+    fx:{ st:{ liver:['포도당 생산 ↓','(메트포르민)'] }, hor:H(.3,.5,.04,.1),
+      flows:[['glc','liver','pool',1.2],['gcg','pancreas','liver',1.4],['glc','pool','brain',1],['glc','pool','muscle',.5],['ffa','fat','liver|muscle',1]],
+      curve:[[0,128],[2,124],[4,121],[6,122],[8,126]] },
+    facts:['높음','중립~소폭 감소','매우 낮음'],
+    tips:[
+      '<b>흔한 부작용</b>설사·오심·복부팽만이에요. 낮은 용량에서 시작해 천천히 늘리고 식사와 함께 먹으면 줄어드는 경우가 많아요. XR·SR 서방형이 위장 내약성이 더 좋을 수 있어요.',
+      '<b>신기능</b>eGFR 30 미만은 금기, 30–44는 신규 시작을 권장하지 않아요. 신장을 직접 망가뜨리는 약이 아니라, 신기능이 떨어지면 축적·이상반응 위험이 커지는 거예요.',
+      '<b>장기 복용</b>비타민 B12가 줄 수 있어 빈혈·신경병증이 의심되면 검사를 고려해요.',
+      '<b>젖산산증</b>매우 드물지만 중증이에요. 급성 신손상·저산소증·패혈증·심한 탈수에서 위험이 커지고, 조영제 검사 때는 일시 중단 여부를 판단해요.'
+    ] },
+  { short:'SGLT2 억제제', ctx:'meal', route:'경구', tag:'신장', targets:['kidney'], focus:['kidney'],
+    products:'엠파글리플로진 — 자디앙 · 다파글리플로진 — 다파엔·트루다파 등 · 이나보글리플로진 — 엔블로',
+    title:'신장에서 포도당을 덜 회수해 소변으로 내보내요',
+    body:'사구체에서 걸러진 포도당은 원래 근위세뇨관의 SGLT2가 거의 다 다시 흡수해요. SGLT2 억제제는 이 수송체를 막아 포도당이 소변으로 빠져나가게 해요(신장 아래로 나가는 육각형). 인슐린과 상관없이 작동해서 단독으로는 저혈당이 거의 없어요. 나트륨 재흡수도 줄여 사구체의 과도한 여과 압력을 완화하는데, 이것이 심부전·만성콩팥병 보호 효과와 연결돼요.',
+    mech:['SGLT2 수송체 차단','포도당·Na⁺ 재흡수 ↓','요당 배출 ↑','혈당 ↓ (인슐린과 무관)'],
+    rxFlows:[['rx','gut','kidney',1.1]],
+    fx:{ st:{ kidney:['요당 배출 ↑','SGLT2 차단'] }, hor:H(.5,.42,.35,.1), urine:true,
+      flows:[['glc','gut','pool',3],['glc','liver','pool',1.2],['gcg','pancreas','liver',1.2],['ins','pancreas','muscle|fat|liver',1.5],['glc','pool','muscle',1],['glc','pool','brain',.9],['inc','gut','pancreas',1.2],['glc','pool','kidney',2.6]],
+      curve:[[0,125],[30,172],[60,203],[90,206],[120,188],[150,170],[180,155]] },
+    facts:['중간~높음','감소','매우 낮음'],
+    tips:[
+      '<b>언제 우선할까</b>심부전, 만성콩팥병, 동맥경화성 심혈관질환이 있으면 HbA1c가 목표 범위여도 장기 보호 목적으로 고려해요. 성분마다 근거가 같지는 않아요.',
+      '<b>생식기 진균감염·다뇨</b>요당이 늘어 진균이 자라기 쉬워지고, 포도당이 물을 끌고 나가 소변이 늘어요. 고령자·이뇨제 병용 땐 탈수·저혈압에 주의해요.',
+      '<b>정상혈당 케톤산증</b>혈당이 200 mg/dL 미만이어도 오심·구토·복통·빠른 호흡이 있으면 의심해요. 계획 수술 전 보통 3~4일 중단하고, 심한 탈수·구토·장시간 금식 때는 sick day 중단을 안내해요.',
+      '<b>eGFR이 낮으면</b>혈당강하 효과는 약해지지만 심장·신장 보호 효과는 남을 수 있어요.'
+    ] },
+  { short:'DPP-4 억제제', ctx:'meal', route:'경구', tag:'혈중 DPP-4 효소', targets:['blood'], focus:['gut','pancreas'],
+    products:'시타글립틴 — 자누비아 · 리나글립틴 — 트라젠타 · 제미글립틴 — 제미글로 · 에보글립틴 — 슈가논',
+    title:'인크레틴이 분해되지 않게 지켜줘요',
+    body:'원래는 장에서 나온 GLP-1·GIP를 DPP-4 효소가 몇 분 만에 분해해요(약 없이 화면에서 회색 고리로 사라지는 초록 입자). DPP-4 억제제는 이 효소를 막아 몸이 스스로 만든 인크레틴이 더 오래 작용하게 해요. 그래서 혈당이 높을 때만 인슐린 분비가 늘고 글루카곤이 줄어요. 혈당 의존적이라 단독으로는 저혈당 위험이 매우 낮고, 체중은 대체로 변하지 않아요.',
+    mech:['DPP-4 효소 차단','내인성 GLP-1·GIP 분해 ↓','혈당 의존적 인슐린 ↑','글루카곤 ↓'],
+    rxFlows:[['rx','gut','pool',1.4]],
+    fx:{ st:{ pancreas:['인슐린 ↑','글루카곤 ↓'], gut:['인크레틴 유지','(DPP-4 차단)'] }, hor:H(.68,.3,.65,.1), noDPP4:true, pools:{ rx:7 }, glut:{ muscle:.4, fat:.3 },
+      flows:[['glc','gut','pool',3],['glc','liver','pool',1],['gcg','pancreas','liver',.7],['ins','pancreas','muscle|fat|liver',2.4],['glc','pool','muscle',1.3],['glc','pool','brain',.9],['inc','gut','pancreas',2.2]],
+      curve:[[0,128],[30,172],[60,200],[90,203],[120,188],[150,172],[180,160]] },
+    facts:['중간','중립','매우 낮음'],
+    tips:[
+      '<b>신기능별 용량</b>시타글립틴은 eGFR에 따라 100·50·25 mg으로 조절하지만, 리나글립틴은 보통 5 mg을 유지해요.',
+      '<b>드문 부작용</b>심한 관절통, 수포성 유사천포창, 급성 췌장염 보고가 있어요.',
+      '<b>삭사글립틴</b>SAVOR-TIMI 53에서 심부전 입원 증가 신호가 있어 심부전 환자에서 주의해요.',
+      '<b>병용</b>메트포르민 복합제(자누메트·트라젠타듀오·제미메트)가 널리 쓰여요. GLP-1 작용제·터제파타이드와는 같은 경로라 함께 쓰지 않아요.'
+    ] },
+  { short:'GLP-1 작용제', ctx:'meal', route:'주사 (리벨서스는 경구)', tag:'췌장·뇌·위', targets:['pancreas','brain','gut'], focus:['pancreas','brain','gut'],
+    products:'세마글루타이드 — 오젬픽(주 1회 주사)·리벨서스(경구) · 둘라글루타이드 — 트루리시티 · 리라글루타이드 — 빅토자',
+    title:'GLP-1 신호를 강하고 오래 켜줘요',
+    body:'DPP-4에 잘 분해되지 않게 만든 GLP-1 유사체가 수용체를 직접 자극해요. 혈당이 높을 때 β세포의 인슐린 분비를 증폭하고, 과도한 글루카곤을 억제하고, 위 배출을 늦춰 포도당이 천천히 들어오게 해요. 뇌의 식욕·포만감 회로에도 작용해 먹는 양 자체가 줄어서 체중이 감소해요. 피하지방에 주사하면 혈액으로 천천히 들어가요(지방조직에서 나오는 캡슐).',
+    mech:['GLP-1 수용체 자극','인슐린 ↑ (혈당 의존)','글루카곤 ↓','위 배출 지연','식욕 ↓'],
+    rxFlows:[['rx','fat','pancreas|brain|pancreas|gut',1.6]],
+    fx:{ st:{ pancreas:['인슐린 ↑','글루카곤 ↓'], brain:['포만감 ↑','식욕 ↓'], gut:['위 배출 지연','흡수 완만'], fat:['피하 주사','→ 혈액'] }, hor:H(.75,.22,.9,.1), glut:{ muscle:.45, fat:.35 },
+      flows:[['glc','gut','pool',1.7],['glc','liver','pool',.8],['gcg','pancreas','liver',.4],['ins','pancreas','muscle|fat|liver',2.8],['glc','pool','muscle',1.5],['glc','pool','brain',.9],['inc','gut','pancreas',1]],
+      curve:[[0,118],[30,148],[60,165],[90,162],[120,150],[150,140],[180,130]] },
+    facts:['높음~매우 높음','감소','매우 낮음'],
+    tips:[
+      '<b>위장관 증상</b>오심·구토·설사·변비가 가장 흔해요. 낮은 용량에서 단계적으로 늘려요. 구토·설사가 심하면 탈수와 급성 신손상을 확인해요.',
+      '<b>주의 신호</b>담석·담낭염, 췌장염 의심 증상에 주의해요. 세마글루타이드는 혈당이 빠르게 좋아질 때 기존 망막병증이 일시 악화될 수 있어요. 갑상선 수질암·MEN2 관련 금기는 허가사항을 확인해요.',
+      '<b>리벨서스 복용법</b>공복에 물 120 mL 이하로 먹고, 최소 30분 동안 음식·음료·다른 경구약을 피해요.',
+      '<b>병용</b>SU와 함께 쓰면 저혈당을 막기 위해 SU 감량을 검토해요. DPP-4 억제제와는 함께 쓰지 않아요. 오젬픽과 위고비는 같은 성분이어도 서로 바꿔 쓰면 안 돼요.'
+    ] },
+  { short:'터제파타이드', ctx:'meal', route:'주사 (주 1회)', tag:'GIP·GLP-1 수용체', targets:['pancreas','brain'], focus:['pancreas','brain','gut'],
+    products:'터제파타이드 — 마운자로',
+    title:'두 인크레틴 수용체를 함께 자극해요',
+    body:'터제파타이드는 GIP 수용체와 GLP-1 수용체를 함께 자극하는 하나의 분자예요. 두 신호가 함께 혈당 의존적 인슐린 분비를 키우고, 식욕을 줄이고, 대사를 조절해요. 그래서 혈당과 체중을 모두 크게 낮춰요. 2026년 10월에는 국내에서 확증된 심혈관질환이 있는 성인 제2형 당뇨병 환자의 주요 심혈관 사건 위험 감소 적응증이 추가됐어요.',
+    mech:['GIP 수용체 + GLP-1 수용체','인슐린 분비 증폭','식욕 ↓ · 위 배출 지연','혈당·체중 크게 ↓'],
+    rxFlows:[['rx','fat','pancreas|brain|pancreas',1.8]],
+    fx:{ st:{ pancreas:['인슐린 ↑↑','글루카곤 조절'], brain:['포만감 ↑↑','식욕 ↓'], gut:['위 배출 지연','흡수 완만'], fat:['피하 주사','→ 혈액'] }, hor:H(.8,.25,.95,.1), glut:{ muscle:.5, fat:.45 },
+      flows:[['glc','gut','pool',1.5],['glc','liver','pool',.7],['gcg','pancreas','liver',.5],['ins','pancreas','muscle|fat|liver',3],['glc','pool','muscle',1.6],['glc','pool','fat',.6],['glc','pool','brain',.9],['inc','gut','pancreas',1]],
+      curve:[[0,112],[30,138],[60,150],[90,146],[120,136],[150,126],[180,118]] },
+    facts:['매우 높음','크게 감소','매우 낮음'],
+    tips:[
+      '<b>부작용</b>오심·구토·설사·변비·식욕감소가 흔하고, 탈수·담낭질환·췌장염 의심 증상에 주의해요. 낮은 용량에서 시작해 단계적으로 늘려요.',
+      '<b>병용 제한</b>다른 GLP-1 작용제와 중복 사용하지 않고, DPP-4 억제제 추가도 권고되지 않아요.',
+      '<b>저혈당</b>단독으로는 낮지만 SU·인슐린과 함께 쓰면 높아질 수 있어요.',
+      '<b>해석 주의</b>SURPASS-CVOT의 주요 비교는 둘라글루타이드 대비 비열등성이라, 심혈관 효과가 더 우월하다는 뜻은 아니에요. 제1형 당뇨병의 인슐린 대체제도 아니에요.'
+    ] },
+  { short:'설포닐우레아', ctx:'meal', route:'경구', tag:'췌장 β세포', targets:['pancreas'], focus:['pancreas'],
+    products:'글리메피리드 — 아마릴 · 글리클라지드 — 디아미크롱 · 글리피지드 — 다이그린',
+    title:'β세포에 인슐린을 내보내라고 직접 명령해요',
+    body:'SU는 β세포 KATP 통로의 SUR1에 붙어 통로를 직접 닫아요. 포도당 대사 단계를 건너뛰고 탈분극 → Ca²⁺ 유입 → 인슐린 분비가 바로 일어나요. 그래서 혈당이 이미 낮을 때도 분비가 이어질 수 있어 저혈당 위험이 있어요. 인슐린 저항성 자체를 고치지는 않고, 분비량을 늘려 밀어붙이는 방식이에요.',
+    mech:['SU → SUR1 결합','KATP 통로 닫힘 (포도당 대사 건너뜀)','탈분극 → Ca²⁺','인슐린 분비 ↑ (혈당과 무관)'],
+    rxFlows:[['rx','gut','pancreas',1.4]],
+    fx:{ st:{ pancreas:['인슐린 ↑↑','혈당과 무관'], muscle:['GLUT4 반응 ↓','저항성은 그대로'] }, hor:H(.92,.4,.35,.1), glut:{ muscle:.5, fat:.45 },
+      flows:[['glc','gut','pool',3],['glc','liver','pool',.9],['gcg','pancreas','liver',1],['ins','pancreas','muscle|fat|liver',4],['glc','pool','muscle',1.8],['glc','pool','fat',.6],['glc','pool','brain',.9],['inc','gut','pancreas',1.2]],
+      curve:[[0,118],[30,160],[60,182],[90,176],[120,156],[150,134],[180,116]] },
+    facts:['높음','증가','높음'],
+    tips:[
+      '<b>저혈당</b>식사를 거르거나, 운동량이 갑자기 늘거나, 신기능이 떨어졌거나, 고령일 때 특히 위험해요. 글리메피리드 복용자가 아침을 거른다면 반드시 안내해요.',
+      '<b>체중 증가</b>지방 저장에 유리한 인슐린 환경, 저혈당 뒤 보상적으로 더 먹는 것 등이 겹쳐요. LEAD-2에서 같은 HbA1c 감소에도 리라글루타이드는 약 −2.8 kg, 글리메피리드는 약 +1.0 kg이었어요.',
+      '<b>고령자</b>글리벤클라미드는 지속적·중증 저혈당 위험이 높아 피하는 것이 권고돼요.',
+      '<b>병용</b>인슐린과 함께 쓰면 SU 감량·중단을 고려하고, 글리니드와는 표적이 겹쳐 함께 쓰지 않아요.'
+    ] },
+  { short:'글리니드', ctx:'meal', route:'경구 (식사 직전)', tag:'췌장 β세포', targets:['pancreas'], focus:['pancreas'],
+    products:'레파글리니드 — 노보넘 · 나테글리니드 — 파스틱 · 미티글리니드 — 글루패스트',
+    title:'식사 때만 짧고 빠르게 인슐린을 끌어내요',
+    body:'SU처럼 β세포 KATP 통로 관련 표적에 작용하지만 작용이 더 빠르고 짧아요. 식사 직전에 먹으면 식사 초반 인슐린 분비가 앞당겨져, 제2형 당뇨병에서 약해진 초기 분비를 보완하고 식후 혈당 상승을 줄여요. 식사를 건너뛰면 그 끼니의 약도 건너뛰는 것이 원칙이에요.',
+    mech:['식사 직전 복용','KATP 통로 닫힘 (짧게)','초기 인슐린 분비 ↑','식후 혈당 ↓'],
+    rxFlows:[['rx','gut','pancreas',1.2]],
+    fx:{ st:{ pancreas:['초기 분비 ↑','(짧게 작용)'] }, hor:H(.82,.4,.35,.1), glut:{ muscle:.45, fat:.4 },
+      flows:[['glc','gut','pool',3],['glc','liver','pool',1],['gcg','pancreas','liver',1],['ins','pancreas','muscle|fat|liver',3.4],['glc','pool','muscle',1.5],['glc','pool','brain',.9],['inc','gut','pancreas',1.2]],
+      curve:[[0,135],[30,165],[60,188],[90,186],[120,172],[150,160],[180,152]] },
+    facts:['식후 혈당 위주','증가 가능','있음 (SU보다 짧음)'],
+    tips:[
+      '<b>복용 원칙</b>제제에 따라 식사 직전에 먹고, 식사를 거르면 그 끼니 약도 거르도록 안내해요.',
+      '<b>병용</b>SU와 작용 표적이 겹쳐 함께 쓰지 않아요.',
+      '<b>상호작용</b>레파글리니드는 겜피브로질과 중대한 상호작용이 있어 병용금기를 확인해요.'
+    ] },
+  { short:'TZD', ctx:'meal', route:'경구', tag:'지방·근육·간', targets:['fat','muscle','liver'], focus:['fat','muscle','liver'],
+    products:'피오글리타존 — 액토스 · 로베글리타존 — 듀비에',
+    title:'인슐린 열쇠에 대한 반응을 되살려요',
+    body:'TZD는 핵수용체 PPAR-γ를 활성화해 지방조직의 유전자 발현과 기능을 바꿔요. 지방산을 지방조직에 안전하게 저장하게 해서 간·근육에 쌓이던 이소성 지방과 지방독성을 줄이고, 그 결과 같은 인슐린에도 GLUT4가 더 잘 올라와요. 인슐린을 더 짜내는 약이 아니라 감수성을 높이는 약이에요. 효과가 나타나기까지 수주가 걸릴 수 있어요.',
+    mech:['PPAR-γ 활성화','지방조직 기능 개선','간·근육 이소성 지방 ↓','인슐린 감수성 ↑ → GLUT4 ↑'],
+    rxFlows:[['rx','gut','fat|fat|muscle|liver',1.4]],
+    fx:{ st:{ fat:['PPAR-γ 활성','지방 안전 저장'], muscle:['GLUT4 반응 ↑','감수성 회복'], liver:['포도당 방출 ↓','지방 ↓'] }, hor:H(.5,.4,.35,.1), glut:{ muscle:.8, fat:.75 }, stores:{ fat:.7 }, pools:{ ffa:4 },
+      flows:[['glc','gut','pool',3],['glc','liver','pool',.7],['gcg','pancreas','liver',1],['ins','pancreas','muscle|fat|liver',1.6],['glc','pool','muscle',2.4],['glc','pool','fat',1],['glc','pool','brain',.9],['ffa','pool','fat',1],['inc','gut','pancreas',1.2]],
+      curve:[[0,122],[30,168],[60,192],[90,192],[120,176],[150,160],[180,146]] },
+    facts:['높음','증가','매우 낮음'],
+    tips:[
+      '<b>핵심 부작용</b>부종·체액저류, 체중 증가, 심부전 악화예요. 증상성 심부전에서는 일반적으로 피해요.',
+      '<b>확인할 신호</b>부종, 호흡곤란, 급격한 체중 증가가 나타나면 심부전 악화를 의심해요. 인슐린과 함께 쓰면 부종 위험이 더 높아져요.',
+      '<b>그 밖에</b>골절 위험 증가, 드문 황반부종, 피오글리타존의 방광암 관련 경고도 검토해요.',
+      '<b>쓰임</b>인슐린 저항성이 두드러지고 심부전이 없는 환자에서 고려해요. 피오글리타존은 일부 MASH 환자에서의 이점도 논의돼요.'
+    ] },
+  { short:'α-GI', ctx:'meal', route:'경구 (식사 첫 숟가락과 함께)', tag:'소장', targets:['gut'], focus:['gut'],
+    products:'아카보스 — 글루코바이 · 보글리보스 — 베이슨 · 미글리톨 — 미그보스',
+    title:'소장에서 탄수화물 분해를 늦춰요',
+    body:'소장 점막의 α-글루코시다아제를 억제해 전분·설탕 같은 탄수화물이 단당류로 쪼개지는 속도를 늦춰요. 포도당이 한꺼번에 들어오지 않고 천천히 들어오니 식후 혈당 정점이 낮아지고 늦춰져요. 장 안에서 작용하는 약이라 지도에서 혈액으로 나가는 약 입자는 없어요. 분해되지 않은 탄수화물이 대장까지 가서 세균에 발효되면서 가스가 생겨요.',
+    mech:['α-글루코시다아제 억제','이당류·전분 분해 지연','포도당 흡수 느려짐','식후 혈당 정점 ↓'],
+    rxFlows:[],
+    fx:{ st:{ gut:['분해 지연','흡수 천천히'] }, hor:H(.48,.42,.3,.1),
+      flows:[['glc','gut','pool',1.3],['glc','liver','pool',1.2],['gcg','pancreas','liver',1.1],['ins','pancreas','muscle|fat|liver',1.4],['glc','pool','muscle',.9],['glc','pool','brain',.9],['inc','gut','pancreas',1]],
+      curve:[[0,138],[30,165],[60,186],[90,196],[120,192],[150,182],[180,170]] },
+    facts:['비교적 낮음','중립','매우 낮음'],
+    tips:[
+      '<b>복용 시점</b>식사 첫 숟가락 또는 식사 직전에 먹는 제제가 많아요. 제품별 용법을 확인해요.',
+      '<b>흔한 부작용</b>복부팽만·방귀·설사·복통이에요. 대장에서 탄수화물이 발효되기 때문이에요.',
+      '<b>저혈당 교정</b>인슐린·SU와 함께 쓰다 저혈당이 오면 설탕(자당)이 아니라 포도당으로 교정해요. 자당은 분해되어야 흡수되는데 그 단계가 막혀 있기 때문이에요.'
+    ] },
+  { short:'인슐린', ctx:'fasting', route:'피하 주사', tag:'간·근육·지방', targets:['liver','fat'], focus:['liver','fat','muscle'],
+    products:'기저: 글라진 — 란투스(U100)·투제오(U300) · 데글루덱 — 트레시바 / 식사: 아스파트 — 노보래피드 · 리스프로 — 휴마로그',
+    title:'부족한 인슐린을 바깥에서 채워요',
+    body:'기저 인슐린은 하루 내내 일정하게 작용하면서, 식사하지 않는 동안 간이 포도당을 과하게 만들어 내보내지 않도록 눌러줘요. 그래서 주로 공복혈당을 낮춰요(지방조직에서 나오는 파란 열쇠). 식사 인슐린은 식후에 오르는 혈당을 맡아요. 주사한 인슐린은 혈당이 떨어져도 몸이 스스로 줄일 수 없어서, 효과에 뚜렷한 상한이 없는 대신 저혈당 위험이 있어요.',
+    mech:['피하 주사','혈액으로 천천히 흡수','간 포도당 생산 ↓','근육·지방 포도당 흡수 ↑','공복혈당 ↓'],
+    rxFlows:[['ins','fat','liver|liver|muscle',2.2]],
+    fx:{ st:{ liver:['포도당 생산 ↓','(기저 인슐린)'], fat:['피하 주사','→ 혈액'], muscle:['포도당 흡수','조금 ↑'] }, hor:H(.75,.4,.04,.1), glut:{ muscle:.25 },
+      flows:[['glc','liver','pool',1.2],['gcg','pancreas','liver',1.2],['glc','pool','brain',1],['glc','pool','muscle',.9],['ffa','fat','liver|muscle',.5]],
+      curve:[[0,138],[2,126],[4,117],[6,112],[8,110]] },
+    facts:['매우 높음','증가','높음'],
+    tips:[
+      '<b>저혈당·체중 증가</b>가장 중요한 문제예요. 70 mg/dL 미만이면 빠르게 흡수되는 탄수화물 약 15 g을 먹고 15분 뒤 다시 재요.',
+      '<b>주사 부위 순환</b>같은 곳에 반복 주사하면 지방비대증이 생겨 흡수가 불규칙해져요.',
+      '<b>제품 전환</b>란투스 U100과 투제오 U300은 같은 글라진이지만 농도·약동학이 달라요. 펜에 표시된 단위로 투여하고 전환 시 혈당을 추적해요.',
+      '<b>공복은 좋은데 HbA1c가 높다면</b>기저 인슐린을 무작정 늘리기보다 식후 혈당을 평가해요. 강화는 GLP-1 병용, Basal-plus, Basal-bolus 순으로 검토해요.'
+    ] }
+];
+SCN.drugs = { kind:'rx', name:'약물 작용', steps:DRUGS };
+
+/* ---------- 지도 기하 ---------- */
+const LOOP = { x:136, y:104, w:168, h:456, r:36 };
+const SEG = (() => {
+  const { x, y, w, h, r } = LOOP, q = Math.PI / 2;
+  const s = [
+    { k:'l', x0:x+r, y0:y, x1:x+w-r, y1:y },
+    { k:'a', cx:x+w-r, cy:y+r, a0:-q },
+    { k:'l', x0:x+w, y0:y+r, x1:x+w, y1:y+h-r },
+    { k:'a', cx:x+w-r, cy:y+h-r, a0:0 },
+    { k:'l', x0:x+w-r, y0:y+h, x1:x+r, y1:y+h },
+    { k:'a', cx:x+r, cy:y+h-r, a0:q },
+    { k:'l', x0:x, y0:y+h-r, x1:x, y1:y+r },
+    { k:'a', cx:x+r, cy:y+r, a0:2*q }
+  ];
+  let acc = 0;
+  for (const g of s) { g.len = g.k === 'l' ? Math.hypot(g.x1-g.x0, g.y1-g.y0) : q * r; g.s0 = acc; acc += g.len; }
+  s.L = acc; return s;
+})();
+const LL = SEG.L;
+function loopAt(sv) {
+  sv = ((sv % LL) + LL) % LL;
+  for (const g of SEG) {
+    if (sv <= g.s0 + g.len) {
+      const u = sv - g.s0;
+      if (g.k === 'l') { const f = u / g.len; return { x:g.x0+(g.x1-g.x0)*f, y:g.y0+(g.y1-g.y0)*f, tx:(g.x1-g.x0)/g.len, ty:(g.y1-g.y0)/g.len }; }
+      const a = g.a0 + u / LOOP.r; return { x:g.cx+LOOP.r*Math.cos(a), y:g.cy+LOOP.r*Math.sin(a), tx:-Math.sin(a), ty:Math.cos(a) };
+    }
+  }
+  return { x:SEG[0].x0, y:SEG[0].y0, tx:1, ty:0 };
+}
+function sOf(px, py) { let best = 0, bd = 1e9; for (let sv = 0; sv < LL; sv += .5) { const p = loopAt(sv); const d = (p.x-px)**2 + (p.y-py)**2; if (d < bd) { bd = d; best = sv; } } return best; }
+const fwd = (a, b) => ((b - a) % LL + LL) % LL;
+
+const ORG = {
+  brain:   { port:[240,104], edge:[240,78],  zone:[262,40,28,26] },
+  liver:   { port:[136,179], edge:[122,179], zone:[76,176,38,62] },
+  pancreas:{ port:[136,332], edge:[122,332], zone:[34,314,24,24], beta:[46,326], alpha:[82,314] },
+  gut:     { port:[136,485], edge:[122,485], zone:[62,518,50,30], K:[35,489], L:[86,505] },
+  muscle:  { port:[304,189], edge:[318,189], zone:[340,180,76,44], gates:[183,196,209,222], gateX:330, gateIn:[344,416] },
+  fat:     { port:[304,352], edge:[318,352], zone:[336,366,20,32], gates:[370,388], gateX:330, gateIn:[340,360], src:[380,370,30,24] },
+  adrenal: { port:[304,495], edge:[318,495], zone:[389,506,14,8] },
+  kidney:  { port:[240,560], edge:[240,578], zone:[271,596,14,20] }
+};
+for (const k in ORG) ORG[k].s = sOf(ORG[k].port[0], ORG[k].port[1]);
+
+const jit = (p, r) => [p[0] + rnd(-r, r), p[1] + rnd(-r, r)];
+const inZone = z => [rnd(z[0], z[0] + z[2]), rnd(z[1], z[1] + z[3])];
+function interior(org, type, dir) {
+  const o = ORG[org];
+  if (org === 'pancreas') {
+    if (type === 'ins') return jit(o.beta, 5);
+    if (type === 'gcg') return jit(o.alpha, 3);
+    if (type === 'aa') return jit(Math.random() < .5 ? o.beta : o.alpha, 4);
+    return jit(o.beta, 6);
+  }
+  if (org === 'gut' && type === 'inc') return jit(Math.random() < .5 ? o.K : o.L, 2);
+  if (org === 'fat' && dir === 'out') return inZone(o.src);
+  return inZone(o.zone);
+}
+function mkPoly(pts) {
+  const segs = []; let L = 0;
+  for (let i = 0; i < pts.length - 1; i++) { const a = pts[i], b = pts[i+1], l = Math.hypot(b[0]-a[0], b[1]-a[1]); segs.push({ a, b, l, s0:L }); L += l; }
+  return { segs, L };
+}
+function polyAt(P, d) {
+  for (const s of P.segs) {
+    if (d <= s.s0 + s.l) { const f = s.l ? (d - s.s0) / s.l : 0; return { x:s.a[0]+(s.b[0]-s.a[0])*f, y:s.a[1]+(s.b[1]-s.a[1])*f, ang:Math.atan2(s.b[1]-s.a[1], s.b[0]-s.a[0]) }; }
+  }
+  const s = P.segs[P.segs.length - 1]; return { x:s.b[0], y:s.b[1], ang:Math.atan2(s.b[1]-s.a[1], s.b[0]-s.a[0]) };
+}
+
+/* ---------- 상태 ---------- */
+const state = { sc:'meal', step:0, playing:false, el:0, rx:true, dm:'' };
+const isRx = () => SCN[state.sc].kind === 'rx';
+let cur = null, flows = [], P = [], pulses = [], glcShown = 88, glcTarget = 88, curveFn = null;
+const hShown = { ins:.3, gcg:.3, inc:.05, epi:.1 };
+const HORM = new Set(['ins','gcg','inc','epi']);
+const POOLT = ['glc','aa','ffa','ket','rx'];
+const poolTimer = { glc:0, aa:0, ffa:0, ket:0, rx:0 };
+const V = 100, VS = 46;
+
+/* ---------- 입자 ---------- */
+function newP(type) { return { type, ph:'', a:0, aT:1, v:V * rnd(.88, 1.12), lane:rnd(-7, 7), x:0, y:0, ang:0, t:0 }; }
+function pathIn(to, type) {
+  const o = ORG[to];
+  if (type === 'glc' && o.gates && (cur.glut[to] || 0) > .5) {
+    const gy = o.gates[Math.floor(Math.random() * o.gates.length)];
+    return mkPoly([o.port, o.edge, [o.gateX, gy], [rnd(o.gateIn[0], o.gateIn[1]), gy + rnd(-4, 4)]]);
+  }
+  if (type === 'glc' && to === 'kidney' && cur.urine) {
+    return mkPoly([o.port, o.edge, [rnd(266, 290), rnd(596, 612)], [rnd(272, 284), 648]]);
+  }
+  return mkPoly([o.port, o.edge, interior(to, type, 'in')]);
+}
+function spawnFrom(type, from, to) {
+  const p = newP(type), o = ORG[from];
+  p.from = from; p.to = to; p.ph = 'out'; p.d = 0;
+  p.path = mkPoly([interior(from, type, 'out'), o.edge, o.port]);
+  if (to !== 'pool') { p.need = fwd(o.s, ORG[to].s); if (p.need < 30) p.need += LL; }
+  if (type === 'inc' && to === 'pancreas' && !cur.noDPP4 && Math.random() < .5) p.dis = p.need * rnd(.3, .7);
+  P.push(p);
+}
+function claimPool(type, to) {
+  const sT = ORG[to].s; const cand = [];
+  for (const p of P) if (p.ph === 'pool' && p.type === type && !p.dying) { const d = fwd(p.s, sT); if (d > 40) cand.push([d, p]); }
+  let p;
+  if (cand.length) { cand.sort((a, b) => a[0] - b[0]); const pick = cand[Math.floor(Math.random() * Math.min(4, cand.length))]; p = pick[1]; p.need = pick[0]; }
+  else { p = newP(type); p.s = sT - rnd(140, 320); p.need = fwd(p.s, sT); P.push(p); }
+  p.ph = 'loop'; p.trav = 0; p.to = to; p.fromPool = true;
+}
+function spawnPool(type, sv, alpha) { const p = newP(type); p.ph = 'pool'; p.s = sv; p.a = alpha; p.to = 'pool'; P.push(p); return p; }
+function pickTo(to) { if (to.indexOf('|') < 0) return to; const a = to.split('|'); return a[Math.floor(Math.random() * a.length)]; }
+function runFlow(f) { const dest = pickTo(f.to); if (f.from === 'pool') claimPool(f.type, dest); else spawnFrom(f.type, f.from, dest); }
+function pulse(x, y, type) { pulses.push({ x, y, type, t:0 }); }
+
+function managePools(dt) {
+  for (const t of POOLT) {
+    poolTimer[t] -= dt; if (poolTimer[t] > 0) continue;
+    const target = t === 'glc' ? Math.min(70, Math.round(glcShown * .19)) : ((cur.pools && cur.pools[t]) || 0);
+    let n = 0; const members = [];
+    for (const p of P) {
+      if (p.type !== t || p.dying) continue;
+      if (p.ph === 'pool') { n++; members.push(p); } else if (p.to === 'pool' && p.ph === 'out') n++;
+    }
+    const inflow = flows.some(f => f.type === t && f.to === 'pool');
+    if (n > target + 2 && members.length) { members[Math.floor(Math.random() * members.length)].dying = true; poolTimer[t] = .3; }
+    else if (n < target - 2 && (!inflow || n < target - 6)) { spawnPool(t, rnd(0, LL), 0); poolTimer[t] = .22; }
+  }
+}
+
+function update(dt) {
+  const vm = SPEED;
+  for (let i = P.length - 1; i >= 0; i--) {
+    const p = P[i];
+    if (p.dying) p.aT = 0;
+    p.a += (p.aT - p.a) * Math.min(1, dt * 4);
+    if (p.dying && p.a < .03) { P.splice(i, 1); continue; }
+    if (p.ph === 'out') {
+      p.d += VS * vm * dt; const q = polyAt(p.path, p.d); p.x = q.x; p.y = q.y; p.ang = q.ang;
+      if (p.d >= p.path.L) { p.s = ORG[p.from].s; p.trav = 0; p.fromPool = false; if (p.to === 'pool') { p.ph = 'pool'; p.k = 0; } else p.ph = 'loop'; }
+    } else if (p.ph === 'pool' || p.ph === 'loop') {
+      const ds = p.v * vm * dt; p.s += ds; let k = 1;
+      if (p.ph === 'loop') {
+        p.trav += ds;
+        if (!p.fromPool) k = Math.min(1, p.trav / 24);
+        k = Math.min(k, Math.max(0, (p.need - p.trav) / 24));
+        if (p.dis && p.trav >= p.dis) { p.ph = 'pop'; p.t = 0; p.aT = 0; }
+        else if (p.trav >= p.need) { p.ph = 'in'; p.d = 0; p.path = pathIn(p.to, p.type); }
+      } else if (p.k !== undefined && p.k < 1) { p.k = Math.min(1, p.k + dt * 2); k = p.k; }
+      if (p.ph === 'pool' || p.ph === 'loop' || p.ph === 'pop') { const q = loopAt(p.s); p.x = q.x - q.ty * p.lane * k; p.y = q.y + q.tx * p.lane * k; p.ang = Math.atan2(q.ty, q.tx); }
+    } else if (p.ph === 'in') {
+      p.d += VS * vm * dt; const q = polyAt(p.path, p.d); p.x = q.x; p.y = q.y; p.ang = q.ang;
+      if (p.d >= p.path.L) { p.ph = 'end'; p.t = 0; p.aT = 0; if (HORM.has(p.type) || p.type === 'rx') pulse(p.x, p.y, p.type); }
+    } else if (p.ph === 'end') {
+      p.t += dt; if (p.t > .5) { P.splice(i, 1); continue; }
+    } else if (p.ph === 'pop') {
+      p.t += dt; if (p.t > .7) { P.splice(i, 1); continue; }
+    }
+  }
+  for (let i = pulses.length - 1; i >= 0; i--) { pulses[i].t += dt; if (pulses[i].t > .75) pulses.splice(i, 1); }
+}
+
+/* ---------- 그리기 ---------- */
+const cv = $('#cv'), ctx = cv.getContext('2d');
+let K = 1;
+const C = {};
+function readColors() {
+  const cs = getComputedStyle(document.documentElement);
+  for (const n of ['glc','ffa','gly','lac','ket','aa','urea','ins','gcg','inc','epi','rx','surface','ink-3']) C[n] = cs.getPropertyValue('--' + n).trim();
+}
+function resize() {
+  const r = cv.getBoundingClientRect(), dpr = Math.min(2.5, window.devicePixelRatio || 1);
+  cv.width = Math.max(1, Math.round(r.width * dpr)); cv.height = Math.max(1, Math.round(r.height * dpr));
+  K = cv.width / 440;
+}
+function hexPath(x, y, r) { ctx.beginPath(); for (let i = 0; i < 6; i++) { const a = i * Math.PI / 3; ctx[i ? 'lineTo' : 'moveTo'](x + r * Math.cos(a), y + r * Math.sin(a)); } ctx.closePath(); }
+function shape(p) {
+  const a = p.a; if (a <= .01) return;
+  const x = p.x, y = p.y, c = C[p.type];
+  ctx.globalAlpha = a; ctx.fillStyle = c; ctx.strokeStyle = c;
+  switch (p.type) {
+    case 'glc': hexPath(x, y, 4.4); ctx.fill(); break;
+    case 'aa': ctx.beginPath(); ctx.moveTo(x, y - 5); ctx.lineTo(x + 4.6, y + 3.4); ctx.lineTo(x - 4.6, y + 3.4); ctx.closePath(); ctx.fill(); break;
+    case 'ffa': ctx.save(); ctx.translate(x, y); ctx.rotate(p.ang); ctx.beginPath(); ctx.moveTo(-3.4, -1.9); ctx.lineTo(3.4, -1.9); ctx.arc(3.4, 0, 1.9, -Math.PI/2, Math.PI/2); ctx.lineTo(-3.4, 1.9); ctx.arc(-3.4, 0, 1.9, Math.PI/2, Math.PI*1.5); ctx.fill(); ctx.restore(); break;
+    case 'gly': ctx.lineWidth = 1.6; ctx.beginPath(); ctx.arc(x, y, 2.7, 0, TAU); ctx.stroke(); break;
+    case 'lac': ctx.fillRect(x - 2.8, y - 2.8, 5.6, 5.6); break;
+    case 'ket': ctx.beginPath(); ctx.moveTo(x, y - 4.8); ctx.lineTo(x + 3.8, y); ctx.lineTo(x, y + 4.8); ctx.lineTo(x - 3.8, y); ctx.closePath(); ctx.fill(); break;
+    case 'urea': ctx.lineWidth = 2; ctx.lineCap = 'round'; ctx.beginPath(); ctx.moveTo(x - 3.6, y); ctx.lineTo(x + 3.6, y); ctx.moveTo(x, y - 3.6); ctx.lineTo(x, y + 3.6); ctx.stroke(); break;
+    case 'ins':
+      ctx.beginPath(); ctx.arc(x - 2.6, y, 2.9, 0, TAU); ctx.fill();
+      ctx.fillRect(x - .5, y - 1, 6.2, 2); ctx.fillRect(x + 3.9, y + .6, 1.6, 2.4); ctx.fillRect(x + 1.6, y + .6, 1.4, 1.8);
+      ctx.fillStyle = C.surface; ctx.beginPath(); ctx.arc(x - 2.6, y, 1.05, 0, TAU); ctx.fill(); break;
+    case 'gcg': case 'inc':
+      ctx.beginPath(); ctx.arc(x, y, p.type === 'gcg' ? 3.6 : 3.1, 0, TAU); ctx.fill();
+      ctx.globalAlpha = a * .35; ctx.lineWidth = 1.2; ctx.beginPath(); ctx.arc(x, y, p.type === 'gcg' ? 6 : 5.4, 0, TAU); ctx.stroke(); break;
+    case 'epi':
+      ctx.beginPath();
+      for (let i = 0; i < 8; i++) { const r = i % 2 ? 1.6 : 5.4, an = i * Math.PI / 4 - Math.PI / 2; ctx[i ? 'lineTo' : 'moveTo'](x + r * Math.cos(an), y + r * Math.sin(an)); }
+      ctx.closePath(); ctx.fill(); break;
+    case 'rx':
+      ctx.save(); ctx.translate(x, y); ctx.rotate(p.ang);
+      ctx.beginPath(); ctx.moveTo(0, -2.7); ctx.lineTo(-2.6, -2.7); ctx.arc(-2.6, 0, 2.7, -Math.PI/2, Math.PI/2, true); ctx.lineTo(0, 2.7); ctx.closePath(); ctx.fill();
+      ctx.fillStyle = C.surface; ctx.beginPath(); ctx.moveTo(0, -2.7); ctx.lineTo(2.6, -2.7); ctx.arc(2.6, 0, 2.7, -Math.PI/2, Math.PI/2); ctx.lineTo(0, 2.7); ctx.closePath(); ctx.fill();
+      ctx.lineWidth = 1.1; ctx.beginPath(); ctx.moveTo(-2.6, -2.7); ctx.lineTo(2.6, -2.7); ctx.arc(2.6, 0, 2.7, -Math.PI/2, Math.PI/2); ctx.lineTo(-2.6, 2.7); ctx.arc(-2.6, 0, 2.7, Math.PI/2, Math.PI*1.5); ctx.stroke();
+      ctx.restore(); break;
+  }
+  if (p.ph === 'pop') { const f = p.t / .7; ctx.globalAlpha = (1 - f) * .8; ctx.strokeStyle = C['ink-3']; ctx.lineWidth = 1.1; ctx.beginPath(); ctx.arc(x, y, 3 + f * 8, 0, TAU); ctx.stroke(); }
+}
+function draw() {
+  ctx.setTransform(K, 0, 0, K, 0, 0);
+  ctx.clearRect(0, 0, 440, 640);
+  for (const p of P) if (!HORM.has(p.type) && p.type !== 'rx') shape(p);
+  for (const p of P) if (HORM.has(p.type)) shape(p);
+  for (const p of P) if (p.type === 'rx') shape(p);
+  for (const q of pulses) { const f = q.t / .75; ctx.globalAlpha = (1 - f) * .85; ctx.strokeStyle = C[q.type]; ctx.lineWidth = 1.5; ctx.beginPath(); ctx.arc(q.x, q.y, 3 + f * 11, 0, TAU); ctx.stroke(); }
+  ctx.globalAlpha = 1;
+}
+
+/* ---------- 곡선 보간 ---------- */
+function monotone(pts) {
+  const n = pts.length, xs = pts.map(p => p[0]), ys = pts.map(p => p[1]), dx = [], m = [], t = [];
+  for (let i = 0; i < n - 1; i++) { dx[i] = xs[i+1] - xs[i]; m[i] = (ys[i+1] - ys[i]) / dx[i]; }
+  t[0] = m[0]; t[n-1] = m[n-2];
+  for (let i = 1; i < n - 1; i++) t[i] = m[i-1] * m[i] <= 0 ? 0 : (m[i-1] + m[i]) / 2;
+  for (let i = 0; i < n - 1; i++) {
+    if (m[i] === 0) { t[i] = 0; t[i+1] = 0; continue; }
+    const a = t[i] / m[i], b = t[i+1] / m[i], h = a*a + b*b;
+    if (h > 9) { const k = 3 / Math.sqrt(h); t[i] = k * a * m[i]; t[i+1] = k * b * m[i]; }
+  }
+  return x => {
+    if (x <= xs[0]) return ys[0]; if (x >= xs[n-1]) return ys[n-1];
+    let i = 0; while (x > xs[i+1]) i++;
+    const h = dx[i], s = (x - xs[i]) / h, s2 = s*s, s3 = s2*s;
+    return (2*s3 - 3*s2 + 1)*ys[i] + (s3 - 2*s2 + s)*h*t[i] + (-2*s3 + 3*s2)*ys[i+1] + (s3 - s2)*h*t[i+1];
+  };
+}
+
+/* ---------- 화면 구성 ---------- */
+const glyDots = {};
+function buildRosette(id, cx, cy, R, d) {
+  const g = document.getElementById(id), pts = [];
+  for (let j = -9; j <= 9; j++) for (let i = -9; i <= 9; i++) {
+    const x = cx + d * (i + j / 2), y = cy + d * (j * Math.sqrt(3) / 2), r = Math.hypot(x - cx, y - cy);
+    if (r <= R) pts.push([r, x, y]);
+  }
+  pts.sort((a, b) => a[0] - b[0]);
+  g.innerHTML = pts.map(([, x, y], i) => `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${(d * .37).toFixed(2)}" style="transition-delay:${i * 14}ms"/>`).join('');
+  glyDots[id] = Array.from(g.children);
+}
+function setGlyco(id, level) { const dots = glyDots[id], n = Math.round(level * dots.length); dots.forEach((c, i) => c.classList.toggle('on', i < n)); }
+function setGlut(id, level) {
+  const g = document.getElementById('glut-' + id), shift = id === 'muscle' ? -44.5 : -32.5;
+  g.style.transform = `translateX(${(shift * level).toFixed(1)}px)`;
+  g.classList.toggle('open', level > .5);
+}
+function flash(el) { el.classList.remove('chg'); void el.getBoundingClientRect(); el.classList.add('chg'); }
+function setStatus(id, lines) {
+  lines = lines || ['', ''];
+  const a = document.getElementById('st-' + id + '-0'), b = document.getElementById('st-' + id + '-1');
+  if (!b) { const t = [lines[0], lines[1]].filter(Boolean).join(' · '); if (a.textContent !== t) { a.textContent = t; flash(a); } return; }
+  if (a.textContent !== (lines[0] || '')) { a.textContent = lines[0] || ''; flash(a); }
+  if (b.textContent !== (lines[1] || '')) { b.textContent = lines[1] || ''; flash(b); }
+}
+
+const BASE = { ins:.3, gcg:.3, inc:.08, epi:.12 };
+const MET = [
+  ['ins', '인슐린', 'β세포'], ['gcg', '글루카곤', 'α세포'], ['inc', '인크레틴', '장 K·L세포'], ['epi', '아드레날린', '부신·교감신경']
+];
+function hLabel(h, v) { const b = BASE[h]; if (v < b * .55) return h === 'gcg' ? '억제' : '낮음'; if (v <= b * 1.35) return '기저'; if (v < .6) return '증가'; return '크게 증가'; }
+function buildMeters() {
+  $('#meters').innerHTML = MET.map(([k, n, s]) => `<div class="meter" id="m-${k}"><div class="m-name">${n}<small>${s}</small></div><div class="m-bar" style="--c:var(--${k})"><i class="m-fill"></i><b class="m-base" style="left:${BASE[k] * 100}%"></b></div><div class="m-val">기저</div></div>`).join('');
+}
+function setMeters(hor) {
+  for (const [k] of MET) { const el = document.getElementById('m-' + k); el.querySelector('.m-fill').style.width = (hor[k] * 100).toFixed(0) + '%'; el.querySelector('.m-val').textContent = hLabel(k, hor[k]); }
+}
+
+const LEG = { glc:'포도당', aa:'아미노산', ffa:'지방산', gly:'글리세롤', lac:'젖산', ket:'케톤체', urea:'요소', ins:'인슐린 (열쇠)', gcg:'글루카곤', inc:'GLP-1·GIP', epi:'아드레날린', rx:'약 성분' };
+function legIcon(t) {
+  const c = `var(--${t})`;
+  const s = {
+    glc:`<path d="M5 0 2.5 4.3-2.5 4.3-5 0-2.5-4.3 2.5-4.3Z" fill="${c}"/>`,
+    aa:`<path d="M0-5 4.8 3.6-4.8 3.6Z" fill="${c}"/>`,
+    ffa:`<rect x="-5.5" y="-2" width="11" height="4" rx="2" fill="${c}"/>`,
+    gly:`<circle r="3" fill="none" stroke="${c}" stroke-width="1.7"/>`,
+    lac:`<rect x="-3" y="-3" width="6" height="6" fill="${c}"/>`,
+    ket:`<path d="M0-5 4 0 0 5-4 0Z" fill="${c}"/>`,
+    urea:`<path d="M-4 0H4M0-4V4" stroke="${c}" stroke-width="2.1" stroke-linecap="round"/>`,
+    ins:`<circle cx="-2.6" r="3" fill="${c}"/><rect x="-.5" y="-1" width="6.4" height="2" fill="${c}"/><rect x="4" y=".6" width="1.6" height="2.4" fill="${c}"/><rect x="1.6" y=".6" width="1.4" height="1.8" fill="${c}"/><circle cx="-2.6" r="1.1" fill="var(--surface)"/>`,
+    gcg:`<circle r="3.6" fill="${c}"/><circle r="6" fill="none" stroke="${c}" stroke-opacity=".4" stroke-width="1.2"/>`,
+    inc:`<circle r="3.1" fill="${c}"/><circle r="5.5" fill="none" stroke="${c}" stroke-opacity=".4" stroke-width="1.2"/>`,
+    epi:`<path d="M0-5.6 1.2-1.2 5.6 0 1.2 1.2 0 5.6-1.2 1.2-5.6 0-1.2-1.2Z" fill="${c}"/>`,
+    rx:`<rect x="-5.6" y="-2.8" width="11.2" height="5.6" rx="2.8" fill="var(--surface)" stroke="${c}" stroke-width="1.1"/><path d="M0-2.8H-2.8A2.8 2.8 0 0 0-2.8 2.8H0Z" fill="${c}"/>`
+  }[t];
+  return `<svg viewBox="-7 -7 14 14" aria-hidden="true">${s}</svg>`;
+}
+function buildLegend(sc) {
+  const used = new Set(['glc']);
+  const rx = sc.kind === 'rx';
+  if (rx) { for (const k in T2) for (const f of T2[k].flows) used.add(f[0]); for (const d of DRUGS) for (const f of d.fx.flows.concat(d.rxFlows)) used.add(f[0]); }
+  else for (const st of sc.steps) for (const f of st.flows) used.add(f[0]);
+  const order = ['rx','glc','aa','ffa','gly','lac','ket','urea','ins','gcg','inc','epi'];
+  let h = order.filter(t => used.has(t)).map(t => `<span class="lg">${legIcon(t)}${LEG[t]}</span>`).join('');
+  if (rx) h += `<span class="lg"><svg viewBox="-7 -7 14 14" aria-hidden="true"><rect x="-6.5" y="-3.5" width="13" height="7" rx="3.5" fill="var(--rx)"/></svg>약이 작용하는 곳 (지도 위 표시)</span>`;
+  if (rx || sc.steps.some(st => st.glut) || sc.base.glut.muscle) h +=`<span class="lg"><svg viewBox="-7 -7 14 14" aria-hidden="true"><rect x="-2.5" y="-5" width="5" height="10" rx="2" fill="var(--glut)"/></svg>GLUT4 (포도당 통로)</span>`;
+  h += `<span class="lg"><svg viewBox="-7 -7 14 14" aria-hidden="true"><circle cx="-3" r="2.2" fill="var(--glc)"/><circle cx="3" r="2.2" fill="var(--glc)"/><circle cy="-4" r="2.2" fill="var(--glc)" opacity=".4"/></svg>글리코겐 (포도당 저장고)</span>`;
+  if (!rx && sc.steps.some(st => st.nerves && st.nerves.length)) h +=`<span class="lg"><svg viewBox="-7 -7 14 14" aria-hidden="true"><path d="M-6 0H6" stroke="var(--epi)" stroke-width="1.6" stroke-dasharray="2.5 2.5"/></svg>신경 신호</span>`;
+  if (used.has('inc')) h += `<span class="lg"><svg viewBox="-7 -7 14 14" aria-hidden="true"><circle r="4.5" fill="none" stroke="var(--ink-3)" stroke-width="1.2"/></svg>회색 고리: DPP-4 분해</span>`;
+  $('#legend').innerHTML = h;
+}
+
+let chartX = null, chartY = null;
+function buildChart(sc) {
+  const W = 360, Hh = 184, L = 36, R = 10, T = 14, B = 34, pw = W - L - R, ph = Hh - T - B;
+  const dx = state.dm ? DMS[state.dm][state.sc] : null, dmOn = !!dx, hi = dmOn ? dx.hi : 160, isT1 = state.dm === 't1';
+  const X = t => L + t / sc.T * pw, Y = g => T + (hi - g) / (hi - 60) * ph;
+  chartX = X; chartY = Y;
+  let s = '';
+  if (sc.shade) s += `<rect class="c-shade" x="${X(sc.shade[0])}" y="${T}" width="${X(sc.shade[1]) - X(sc.shade[0])}" height="${ph}"/><text class="c-note ex" x="${X(sc.shade[0]) + 5}" y="${T + 12}">${sc.shade[2]}</text>`;
+  s += `<rect class="c-band" x="${L}" y="${Y(99)}" width="${pw}" height="${Y(70) - Y(99)}"/>`;
+  s += `<text class="c-note" x="${L + pw - 5}" y="${Y(70) - 5}" text-anchor="end">공복 정상 70–99</text>`;
+  for (const g of (hi > 300 ? [70, 140, 200, 300, 400] : [70, 100, 140, 200]).filter(v => v < hi)) s += `<line class="c-grid" x1="${L}" x2="${L + pw}" y1="${Y(g)}" y2="${Y(g)}"/><text class="c-y" x="${L - 6}" y="${Y(g) + 3.5}" text-anchor="end">${g}</text>`;
+  s += `<line class="c-tick" x1="${L}" x2="${L + pw}" y1="${T + ph}" y2="${T + ph}"/>`;
+  for (const t of sc.ticks) s += `<line class="c-tick" x1="${X(t)}" x2="${X(t)}" y1="${T + ph}" y2="${T + ph + 4}"/><text class="c-x" x="${X(t)}" y="${T + ph + 16}" text-anchor="middle">${t}</text>`;
+  s += `<text class="c-x" x="${L + pw}" y="${Hh - 2}" text-anchor="end">${sc.unit}</text>`;
+  const t0 = sc.curve[0][0], t1 = sc.curve[sc.curve.length - 1][0]; let d = '';
+  for (let i = 0; i <= 140; i++) { const t = t0 + (t1 - t0) * i / 140; d += (i ? 'L' : 'M') + X(t).toFixed(1) + ' ' + Y(curveFn(t)).toFixed(1); }
+  s += `<line id="c-cur" class="c-cur" x1="0" x2="0" y1="${T}" y2="${T + ph}"/>`;
+  if (dmOn) {
+    const nf = monotone(sc.curve); let nd = '';
+    for (let i = 0; i <= 140; i++) { const t = t0 + (t1 - t0) * i / 140; nd += (i ? 'L' : 'M') + X(t).toFixed(1) + ' ' + Y(nf(t)).toFixed(1); }
+    s += `<path class="c-norm" d="${nd}"/>`;
+  }
+  s += `<path class="c-line${dmOn ? (isT1 ? ' t1' : ' dm') : ''}" d="${d}"/>`;
+  sc.steps.forEach((st, i) => { const cx = X(st.t).toFixed(1), cy = Y(curveFn(st.t)).toFixed(1); s += `<g class="c-mk" data-i="${i}"><title>${i + 1}단계 · ${st.when}</title><circle class="hit" cx="${cx}" cy="${cy}" r="11"/><circle class="dt" cx="${cx}" cy="${cy}" r="4.2"/></g>`; });
+  const svg = $('#chart'); svg.innerHTML = s; svg.classList.toggle('dm', dmOn && !isT1); svg.classList.toggle('t1', dmOn && isT1);
+  svg.querySelectorAll('.c-mk').forEach(g => g.addEventListener('click', () => { setPlaying(false); goStep(+g.dataset.i); }));
+  if (dmOn) $('#chart-sub').innerHTML = `<span class="ck"><i class="${isT1 ? 't1k' : 'dmk'}"></i>${DMNAME[state.dm]}</span><span class="ck"><i class="nm"></i>정상인</span>`;
+  else $('#chart-sub').textContent = '단위 mg/dL';
+}
+function buildChartRx(d) {
+  const c = T2[d.ctx], W = 360, Hh = 184, L = 36, R = 10, T = 14, B = 34, pw = W - L - R, ph = Hh - T - B, lo = 60, hi = 260;
+  const X = t => L + t / c.T * pw, Y = g => T + (hi - g) / (hi - lo) * ph;
+  chartX = X; chartY = Y;
+  const path = (pts) => { const f = monotone(pts), t0 = pts[0][0], t1 = pts[pts.length - 1][0]; let s = ''; for (let i = 0; i <= 120; i++) { const t = t0 + (t1 - t0) * i / 120; s += (i ? 'L' : 'M') + X(t).toFixed(1) + ' ' + Y(f(t)).toFixed(1); } return s; };
+  let s = `<rect class="c-band" x="${L}" y="${Y(99)}" width="${pw}" height="${Y(70) - Y(99)}"/>`;
+  for (const g of [70, 100, 140, 200]) s += `<line class="c-grid" x1="${L}" x2="${L + pw}" y1="${Y(g)}" y2="${Y(g)}"/><text class="c-y" x="${L - 6}" y="${Y(g) + 3.5}" text-anchor="end">${g}</text>`;
+  s += `<text class="c-note" x="${L + pw - 5}" y="${Y(70) - 4}" text-anchor="end">공복 정상 70–99</text>`;
+  s += `<line class="c-tick" x1="${L}" x2="${L + pw}" y1="${T + ph}" y2="${T + ph}"/>`;
+  for (const t of c.ticks) s += `<line class="c-tick" x1="${X(t)}" x2="${X(t)}" y1="${T + ph}" y2="${T + ph + 4}"/><text class="c-x" x="${X(t)}" y="${T + ph + 16}" text-anchor="middle">${t}</text>`;
+  s += `<text class="c-x" x="${L + pw}" y="${Hh - 2}" text-anchor="end">${c.unit}</text>`;
+  s += `<line id="c-cur" class="c-cur" x1="${X(c.t)}" x2="${X(c.t)}" y1="${T}" y2="${T + ph}"/>`;
+  s += `<path class="c-norm" d="${path(c.normal)}"/>`;
+  s += `<path class="c-t2${state.rx ? ' c-dim' : ''}" d="${path(c.curve)}"/>`;
+  s += `<path class="c-rx${state.rx ? '' : ' c-dim'}" d="${path(d.fx.curve)}"/>`;
+  const act = state.rx ? d.fx.curve : c.curve, gy = monotone(act)(c.t);
+  s += `<circle class="c-now" cx="${X(c.t).toFixed(1)}" cy="${Y(gy).toFixed(1)}" r="4.6" fill="${state.rx ? 'var(--rx)' : 'var(--gcg)'}"/>`;
+  $('#chart').innerHTML = s;
+  $('#chart-sub').innerHTML = '<span class="ck"><i></i>약 복용</span><span class="ck"><i class="t2"></i>약 없이</span><span class="ck"><i class="nm"></i>정상</span>';
+}
+const TAGPOS = {
+  liver:{ x:122, y:95, a:'end' }, pancreas:{ x:122, y:259, a:'end' }, gut:{ x:122, y:401, a:'end' },
+  muscle:{ x:434, y:95, a:'end' }, fat:{ x:434, y:279, a:'end' }, kidney:{ x:300, y:569, a:'end' },
+  brain:{ x:300, y:69, a:'end' }, blood:{ x:220, y:150, a:'mid' }
+};
+function renderTags(d) {
+  const g = $('#rx-tags'); g.innerHTML = '';
+  if (!d || !state.rx) return;
+  const NS = 'http://www.w3.org/2000/svg';
+  for (const t of d.targets) {
+    const p = TAGPOS[t]; if (!p) continue;
+    const grp = document.createElementNS(NS, 'g'); grp.setAttribute('class', 'rx-tag');
+    const txt = document.createElementNS(NS, 'text'); txt.textContent = d.short; txt.setAttribute('y', '3.6');
+    grp.append(txt); g.append(grp);
+    const tw = txt.getComputedTextLength() || d.short.length * 10, w = tw + 30, h = 18;
+    const x0 = p.a === 'end' ? p.x - 6 - w : p.x - w / 2, y0 = p.y - h / 2;
+    grp.setAttribute('transform', `translate(${x0.toFixed(1)} ${(y0 + h / 2).toFixed(1)})`);
+    txt.setAttribute('x', '23');
+    grp.insertAdjacentHTML('afterbegin', `<rect class="ring" x="0" y="${-h / 2}" width="${w.toFixed(1)}" height="${h}" rx="9"/><rect class="b" x="0" y="${-h / 2}" width="${w.toFixed(1)}" height="${h}" rx="9"/><rect class="cap2" x="6.5" y="-3.4" width="12" height="6.8" rx="3.4"/><path class="cap1" d="M12.5 -3.4H9.9A3.4 3.4 0 0 0 9.9 3.4H12.5Z"/>`);
+  }
+}
+function buildDots(sc) {
+  const box = $('#dots'); box.innerHTML = '';
+  box.classList.toggle('rxmode', sc.kind === 'rx');
+  sc.steps.forEach((st, i) => {
+    const b = document.createElement('button'); b.type = 'button'; b.className = 'dot'; b.textContent = sc.kind === 'rx' ? st.short : i + 1;
+    b.setAttribute('aria-label', sc.kind === 'rx' ? `${st.short} 작용 보기` : `${i + 1}단계: ${st.title}`);
+    b.addEventListener('click', () => { setPlaying(false); goStep(i); });
+    box.append(b);
+  });
+}
+
+function merged(scId, idx) {
+  const sc = SCN[scId];
+  if (sc.kind === 'rx') {
+    const d = DRUGS[idx], b = T2[d.ctx], f = d.fx;
+    const r = { st:Object.assign({}, b.st), stores:Object.assign({}, b.stores), glut:Object.assign({}, b.glut), food:b.food,
+      hor:b.hor, pools:Object.assign({}, b.pools), nerves:[], focus:b.focus, flows:b.flows, curve:b.curve, noDPP4:false, urine:false };
+    if (state.rx) {
+      if (f.st) Object.assign(r.st, f.st);
+      if (f.stores) Object.assign(r.stores, f.stores);
+      if (f.glut) Object.assign(r.glut, f.glut);
+      if (f.pools) Object.assign(r.pools, f.pools);
+      r.hor = f.hor; r.flows = f.flows.concat(d.rxFlows); r.curve = f.curve; r.focus = d.focus; r.noDPP4 = !!f.noDPP4; r.urine = !!f.urine;
+    }
+    return r;
+  }
+  const X = state.dm ? DMS[state.dm][scId] : null;
+  const m = { st:Object.assign({}, sc.base.st), stores:Object.assign({}, sc.base.stores), glut:Object.assign({}, sc.base.glut), food:sc.base.food };
+  if (X) { Object.assign(m.st, X.base.st || {}); Object.assign(m.stores, X.base.stores || {}); Object.assign(m.glut, X.base.glut || {}); }
+  for (let i = 0; i <= idx; i++) {
+    const s = sc.steps[i];
+    if (s.st) Object.assign(m.st, s.st);
+    if (s.stores) Object.assign(m.stores, s.stores);
+    if (s.glut) Object.assign(m.glut, s.glut);
+    if ('food' in s) m.food = s.food;
+    if (X) { const x = X.steps[i]; for (const k of (X.base.lock || [])) m.st[k] = X.base.st[k]; if (x.st) Object.assign(m.st, x.st); if (x.stores) Object.assign(m.stores, x.stores); if (x.glut) Object.assign(m.glut, x.glut); }
+  }
+  const s = sc.steps[idx], x = X ? X.steps[idx] : {};
+  m.hor = x.hor || s.hor; m.pools = x.pools || s.pools || {}; m.nerves = x.nerves || s.nerves || []; m.focus = s.focus || [];
+  m.flows = x.flows || s.flows; m.urine = !!x.urine; m.note = x.note || '';
+  return m;
+}
+
+function applyStep() {
+  const sc = SCN[state.sc], st = sc.steps[state.step];
+  cur = merged(state.sc, state.step);
+  const rx = sc.kind === 'rx';
+  let when = st.when, tag = st.tag, title = st.title, body = st.body, mechA = st.mech, tNow = st.t, fl = cur.flows;
+  if (!rx && state.dm) when += ' · ' + DMNAME[state.dm] + (state.dm === 't1' ? ' (인슐린 부족)' : '');
+  $('#st-note').hidden = !cur.note; $('#st-note-t').textContent = cur.note || '';
+  $('#st-note').classList.toggle('t1', state.dm === 't1');
+  $('#st-note-h').textContent = (state.dm ? DMNAME[state.dm] : '') + '에서는';
+  const dead = !rx && state.dm === 't1';
+  $('#cell-beta').classList.toggle('dead', dead); $('#beta-x').classList.toggle('on', dead);
+  if (rx) {
+    const c = T2[st.ctx];
+    when = c.label + ' · ' + st.route; tag = '작용 부위 · ' + st.tag; tNow = c.t; fl = cur.flows;
+    if (!state.rx) { title = c.title; body = c.body.replace('{약}', st.short); mechA = c.mech; tag = '약 없이 (제2형)'; }
+    curveFn = monotone(cur.curve);
+    buildChartRx(st);
+    $('#st-prod').innerHTML = `<b>대표 성분·제품</b>${st.products}`;
+    $('#dm-title').textContent = '복약 포인트 · ' + st.short;
+    $('#rx-facts').innerHTML = ['혈당강하', '체중', '단독 저혈당'].map((k, i) => `<div><dt>${k}</dt><dd>${st.facts[i]}</dd></div>`).join('');
+    $('#dm-list').innerHTML = st.tips.map(x => `<li>${x}</li>`).join('');
+    $('#rxbar-t').textContent = c.label;
+    document.querySelectorAll('#rxbar .seg button').forEach(b => b.setAttribute('aria-pressed', (b.dataset.v === '1') === state.rx ? 'true' : 'false'));
+  }
+  $('#st-prod').hidden = !rx; $('#rx-facts').hidden = !rx;
+  renderTags(rx ? st : null);
+  document.querySelectorAll('#rxcmp tbody tr').forEach((tr, i) => tr.classList.toggle('cur', rx && i === state.step));
+  $('#st-count').textContent = `${state.step + 1} / ${sc.steps.length}`;
+  $('#st-when').textContent = when;
+  $('#st-tag').textContent = tag;
+  $('#st-title').textContent = title;
+  $('#st-body').textContent = body;
+  const mech = $('#st-mech'); mech.innerHTML = '';
+  (mechA || []).forEach((c, i) => {
+    if (i) { const a = document.createElement('span'); a.className = 'arr'; a.textContent = '→'; a.setAttribute('aria-hidden', 'true'); mech.append(a); }
+    const ch = document.createElement('span'); ch.className = 'chip'; ch.textContent = c; mech.append(ch);
+  });
+  for (const id of ORGS) {
+    const g = document.getElementById('o-' + id), f = cur.focus.includes(id);
+    g.classList.toggle('focus', f); g.classList.toggle('dim', cur.focus.length > 0 && !f);
+    setStatus(id, cur.st[id]);
+  }
+  setGlut('muscle', cur.glut.muscle || 0); setGlut('fat', cur.glut.fat || 0);
+  setGlyco('gly-liver', cur.stores.liver); setGlyco('gly-muscle', cur.stores.muscle);
+  $('#droplet').style.transform = `scale(${(.55 + .6 * cur.stores.fat).toFixed(2)})`;
+  $('#nv-vagus').classList.toggle('on', cur.nerves.includes('vagus'));
+  $('#nv-symp').classList.toggle('on', cur.nerves.includes('symp'));
+  $('#food-carb').classList.toggle('on', cur.food === 'carb');
+  $('#food-protein').classList.toggle('on', cur.food === 'protein');
+  setMeters(cur.hor);
+  flows = fl.map(([type, from, to, rate]) => ({ type, from, to, rate, acc:Math.random() * .6 }));
+  glcTarget = curveFn(tNow);
+  const cl = $('#c-cur'); if (cl) { const x = chartX(tNow).toFixed(1); cl.setAttribute('x1', x); cl.setAttribute('x2', x); }
+  updateReadout(true);
+  document.querySelectorAll('#chart .c-mk').forEach((g, i) => g.classList.toggle('on', i === state.step));
+  document.querySelectorAll('#dots .dot').forEach((b, i) => { b.classList.toggle('on', i === state.step); b.classList.toggle('done', rx || i < state.step); b.setAttribute('aria-current', i === state.step ? 'step' : 'false'); });
+  $('#prev').disabled = state.step === 0;
+  $('#next').disabled = state.step === sc.steps.length - 1;
+}
+function goStep(i) {
+  const n = SCN[state.sc].steps.length;
+  i = Math.max(0, Math.min(n - 1, i));
+  state.step = i; state.el = 0; $('#progbar').style.width = '0';
+  applyStep();
+}
+function setPlaying(on) {
+  state.playing = on;
+  const b = $('#play'); b.setAttribute('aria-pressed', on ? 'true' : 'false');
+  $('#play-t').textContent = on ? '일시 정지' : (state.step === SCN[state.sc].steps.length - 1 ? '처음부터' : '자동 재생');
+  $('#play-ic').innerHTML = on ? '<path d="M6 4.5h2.8v11H6zM11.2 4.5H14v11h-2.8z"/>' : '<path d="M6 4.2v11.6L15.5 10z"/>';
+  if (!on) $('#progbar').style.width = '0';
+}
+
+function setScenario(id) {
+  if (!SCN[id]) id = 'meal';
+  state.sc = id; state.step = 0; state.el = 0;
+  const sc = SCN[id], rx = sc.kind === 'rx';
+  if (sc.curve) curveFn = monotone(state.dm && DMS[state.dm][id] ? DMS[state.dm][id].curve : sc.curve);
+  document.querySelectorAll('.tab').forEach(t => t.setAttribute('aria-pressed', t.dataset.sc === id ? 'true' : 'false'));
+  document.querySelectorAll('#cmp [data-sc]').forEach(th => th.classList.toggle('cur', th.dataset.sc === id));
+  const ci = ['meal','fasting','protein','exercise'].indexOf(id), col = ci >= 0 ? ci + 1 : -1;
+  document.querySelectorAll('#cmp tbody tr').forEach(tr => Array.from(tr.children).forEach((td, i) => td.classList.toggle('cur', i === col)));
+  if (!rx) { $('#dm-title').textContent = sc.dm.title; $('#dm-list').innerHTML = sc.dm.items.map(t => `<li>${t}</li>`).join(''); }
+  $('#rxbar').hidden = !rx; $('#dmbar').hidden = rx; state.rx = true;
+  buildLegend(sc); if (!rx) buildChart(sc); buildDots(sc);
+  P = []; pulses = [];
+  goStep(0);
+  glcShown = glcTarget; Object.assign(hShown, cur.hor);
+  const n = Math.min(70, Math.round(glcShown * .19));
+  for (let i = 0; i < n; i++) spawnPool('glc', (i + Math.random() * .6) * LL / n, 1);
+  for (const t of ['aa','ffa','ket','rx']) { const m = cur.pools[t] || 0; for (let i = 0; i < m; i++) spawnPool(t, rnd(0, LL), 1); }
+  setPlaying(false);
+  updateReadout(true);
+}
+
+let lastN = -1;
+const roNum = $('#ro-num'), roState = $('#ro-state');
+function updateReadout(force) {
+  const n = Math.round(glcShown);
+  if (n === lastN && !force) return; lastN = n;
+  roNum.textContent = n;
+  const sc = SCN[state.sc];
+  const fasting = sc.kind === 'rx' ? DRUGS[state.step].ctx === 'fasting' : (state.sc === 'fasting' || state.sc === 'exercise');
+  roState.textContent = n < 70 ? '저혈당 경계'
+    : n >= 250 ? '심한 고혈당'
+    : fasting ? (n <= 75 ? '정상 하한 근처' : n < 100 ? '공복 정상 범위' : n < 126 ? '공복 전단계 범위' : '공복 당뇨병 범위')
+    : (n < 100 ? '정상 범위' : n < 140 ? '식후 정상 범위' : n < 200 ? '식후 상승' : '식후 고혈당');
+}
+
+/* ---------- 루프 ---------- */
+const cellB = $('#cell-beta'), cellA = $('#cell-alpha'), haloB = $('#halo-beta'), haloA = $('#halo-alpha'), haloK = $('#halo-k'), haloL = $('#halo-l'), haloAdr = $('#halo-adr');
+let last = performance.now();
+function frame(now) {
+  const dt = Math.min(.05, (now - last) / 1000); last = now;
+  if (state.playing) {
+    state.el += dt;
+    $('#progbar').style.width = Math.min(100, state.el / STEP_DUR * 100).toFixed(1) + '%';
+    if (state.el >= STEP_DUR) {
+      if (state.step < SCN[state.sc].steps.length - 1) goStep(state.step + 1);
+      else setPlaying(false);
+    }
+  }
+  glcShown += (glcTarget - glcShown) * Math.min(1, dt * 1.1);
+  updateReadout(false);
+  for (const k in hShown) hShown[k] += (cur.hor[k] - hShown[k]) * Math.min(1, dt * 1.5);
+  for (const f of flows) { f.acc += f.rate * RATE * dt; while (f.acc >= 1) { f.acc -= 1; runFlow(f); } }
+  managePools(dt);
+  update(dt);
+  const tt = now / 1000;
+  cellB.style.transform = `scale(${(1 + .1 * hShown.ins * Math.sin(tt * 6.5)).toFixed(3)})`;
+  cellA.style.transform = `scale(${(1 + .12 * hShown.gcg * Math.sin(tt * 5.3 + 1)).toFixed(3)})`;
+  haloB.setAttribute('opacity', (hShown.ins * .32).toFixed(3));
+  haloA.setAttribute('opacity', (hShown.gcg * .32).toFixed(3));
+  const ki = Math.max(0, hShown.inc - .05) * .45;
+  haloK.setAttribute('opacity', ki.toFixed(3)); haloL.setAttribute('opacity', ki.toFixed(3));
+  haloAdr.setAttribute('opacity', (Math.max(0, hShown.epi - .1) * .5).toFixed(3));
+  draw();
+  requestAnimationFrame(frame);
+}
+
+/* ---------- 이벤트 ---------- */
+document.querySelectorAll('.tab').forEach(t => t.addEventListener('click', () => {
+  const id = t.dataset.sc;
+  if (location.hash.slice(1) !== id) location.hash = id; else setScenario(id);
+}));
+document.querySelectorAll('#cmp [data-go]').forEach(b => b.addEventListener('click', () => {
+  const id = b.dataset.go;
+  if (location.hash.slice(1) !== id) location.hash = id; else setScenario(id);
+  document.querySelector('.tabs').scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: 'start' });
+}));
+document.querySelectorAll('#dmbar .seg button').forEach(b => b.addEventListener('click', () => {
+  const v = b.dataset.v; if (v === state.dm || isRx()) return;
+  state.dm = v;
+  document.querySelectorAll('#dmbar .seg button').forEach(x => x.setAttribute('aria-pressed', x.dataset.v === v ? 'true' : 'false'));
+  const sc = SCN[state.sc];
+  curveFn = monotone(v ? DMS[v][state.sc].curve : sc.curve);
+  buildChart(sc); applyStep();
+}));
+document.querySelectorAll('#rxbar .seg button').forEach(b => b.addEventListener('click', () => {
+  const on = b.dataset.v === '1'; if (on === state.rx) return;
+  state.rx = on; applyStep();
+}));
+document.querySelectorAll('#rxcmp [data-drug]').forEach(b => b.addEventListener('click', () => {
+  if (state.sc !== 'drugs') { setScenario('drugs'); location.hash = 'drugs'; }
+  setPlaying(false); goStep(+b.dataset.drug);
+  document.querySelector('.tabs').scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: 'start' });
+}));
+window.addEventListener('hashchange', () => { const h = location.hash.slice(1); if (SCN[h] && h !== state.sc) setScenario(h); });
+$('#prev').addEventListener('click', () => { setPlaying(false); goStep(state.step - 1); });
+$('#next').addEventListener('click', () => { setPlaying(false); goStep(state.step + 1); });
+$('#play').addEventListener('click', () => {
+  if (state.playing) { setPlaying(false); return; }
+  if (state.step === SCN[state.sc].steps.length - 1) goStep(0);
+  setPlaying(true);
+});
+document.addEventListener('keydown', e => {
+  if (e.target.closest && e.target.closest('input,textarea,select')) return;
+  if (e.key === 'ArrowRight') { setPlaying(false); goStep(state.step + 1); }
+  else if (e.key === 'ArrowLeft') { setPlaying(false); goStep(state.step - 1); }
+});
+
+readColors();
+matchMedia('(prefers-color-scheme: dark)').addEventListener('change', readColors);
+new MutationObserver(readColors).observe(document.documentElement, { attributes:true, attributeFilter:['data-theme','class'] });
+new ResizeObserver(resize).observe(cv);
+resize();
+buildRosette('gly-liver', 42, 206, 22, 6.2);
+buildRosette('gly-muscle', 404, 252, 12.5, 5.4);
+buildMeters();
+setScenario(location.hash.slice(1));
+requestAnimationFrame(t => { last = t; frame(t); });
+})();
+</script>
+
+</body>
+</html>

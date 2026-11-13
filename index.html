@@ -111,7 +111,8 @@ h1{font-family:var(--f-display);font-weight:700;font-size:clamp(27px,3.6vw,38px)
 .dots.rxmode .dot{width:auto;padding:0 11px;border-radius:999px;font:600 12px/1 var(--f-body);height:30px}
 .rx-prod{margin:0 0 12px;font-size:12.5px;color:var(--ink-2);line-height:1.55;background:var(--surface-2);border-radius:10px;padding:8px 11px}
 .rx-prod b{display:block;color:var(--rx);font-weight:700;font-size:11.5px;margin-bottom:1px}
-.rx-facts{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin:0 0 14px}
+.rx-facts{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin:0 0 14px}
+@media (max-width:560px){.rx-facts{grid-template-columns:repeat(2,minmax(0,1fr))}}
 .rx-facts div{background:var(--surface);border-radius:12px;padding:9px 11px}
 .rx-facts dt{font-size:11px;color:var(--ink-3);font-weight:600}
 .rx-facts dd{margin:2px 0 0;font-size:13.5px;font-weight:700;color:var(--ink)}
@@ -282,7 +283,10 @@ td.cur{background:var(--accent-soft)}
 #rxcmp tbody th button{border:0;background:none;padding:0;font-weight:700;color:var(--ink);cursor:pointer;text-decoration:underline;text-decoration-color:var(--line);text-underline-offset:4px}
 #rxcmp tbody th button:hover{color:var(--rx);text-decoration-color:var(--rx)}
 #rxcmp tr.cur > *{background:color-mix(in srgb,var(--rx) 10%,var(--surface))}
-#rxcmp{min-width:1040px}
+#rxcmp{min-width:1180px}
+#rxcmp td.dose{min-width:150px;max-width:200px}
+#rxcmp td.dose b{display:block;font-weight:700;color:var(--ink)}
+#rxcmp td.dose small{display:block;margin-top:2px;font-size:11.5px;color:var(--ink-3);line-height:1.45}
 .tbl-wrap + .fine{margin-top:16px}
 #rxcmp td.ing{min-width:250px;max-width:330px;color:var(--ink)}
 #rxcmp .stem{display:block;width:max-content;font:600 11.5px/1.6 var(--f-mono);color:var(--rx);background:color-mix(in srgb,var(--rx) 11%,var(--surface));border-radius:6px;padding:0 7px;margin-bottom:4px}
@@ -579,22 +583,22 @@ td.cur{background:var(--accent-soft)}
     <p>모든 당뇨약은 혈당을 낮추지만 서로 다른 고장 지점을 겨냥해요. 약 이름을 누르면 지도에서 작용을 볼 수 있어요.</p>
     <div class="tbl-wrap">
       <table id="rxcmp">
-        <thead><tr><th scope="col">약물 계열</th><th scope="col">대표 제품(성분)</th><th scope="col">작용 부위</th><th scope="col">고치는 고장</th><th scope="col">혈당강하</th><th scope="col">체중</th><th scope="col">단독 저혈당</th></tr></thead>
+        <thead><tr><th scope="col">약물 계열</th><th scope="col">대표 제품(성분)</th><th scope="col">작용 부위</th><th scope="col">고치는 고장</th><th scope="col">혈당강하</th><th scope="col">용량을 올리면</th><th scope="col">체중</th><th scope="col">단독 저혈당</th></tr></thead>
         <tbody>
-          <tr><th scope="row"><button type="button" data-drug="0">메트포르민</button></th><td class="ing"><span class="stem">-formin</span><span class="pi">다이아벡스·글루코파지<i>(메트포르민)</i></span></td><td>간</td><td>간의 포도당 과잉 생산</td><td>높음</td><td>중립~소폭 감소</td><td>매우 낮음</td></tr>
-          <tr><th scope="row"><button type="button" data-drug="1">SGLT2 억제제</button></th><td class="ing"><span class="stem">-gliflozin</span><span class="pi">자디앙<i>(엠파글리플로진)</i></span><span class="pi">다파엔·트루다파 등<i>(다파글리플로진)</i></span><span class="pi">엔블로<i>(이나보글리플로진)</i></span></td><td>신장 근위세뇨관</td><td>포도당 재흡수 → 요당 배출</td><td>중간~높음</td><td>감소</td><td>매우 낮음</td></tr>
-          <tr><th scope="row"><button type="button" data-drug="2">DPP-4 억제제</button></th><td class="ing"><span class="stem">-gliptin</span><span class="pi">자누비아<i>(시타글립틴)</i></span><span class="pi">트라젠타<i>(리나글립틴)</i></span><span class="pi">제미글로<i>(제미글립틴)</i></span><span class="pi">테넬리아<i>(테네리글립틴)</i></span><span class="pi">가브스<i>(빌다글립틴)</i></span><span class="pi">네시나<i>(알로글립틴)</i></span><span class="pi">온글라이자<i>(삭사글립틴)</i></span><span class="pi">슈가논<i>(에보글립틴)</i></span></td><td>혈중 DPP-4 효소</td><td>인크레틴이 빨리 분해됨</td><td>중간</td><td>중립</td><td>매우 낮음</td></tr>
-          <tr><th scope="row"><button type="button" data-drug="3">GLP-1 작용제</button></th><td class="ing"><span class="stem">-glutide</span><span class="pi">오젬픽·리벨서스<i>(세마글루타이드)</i></span><span class="pi">트루리시티<i>(둘라글루타이드)</i></span></td><td>췌장·뇌·위</td><td>인슐린 부족·글루카곤 과다·과식</td><td>높음~매우 높음</td><td>감소</td><td>매우 낮음</td></tr>
-          <tr><th scope="row"><button type="button" data-drug="4">터제파타이드</button></th><td class="ing"><span class="stem">-tide</span><span class="pi">마운자로<i>(터제파타이드)</i></span></td><td>GIP·GLP-1 수용체</td><td>인크레틴 신호를 이중으로 강화</td><td>매우 높음</td><td>크게 감소</td><td>매우 낮음</td></tr>
-          <tr><th scope="row"><button type="button" data-drug="5">설포닐우레아</button></th><td class="ing"><span class="stem">gli-</span><span class="pi">아마릴<i>(글리메피리드)</i></span><span class="pi">디아미크롱<i>(글리클라지드)</i></span><span class="pi">다이그린<i>(글리피지드)</i></span></td><td>췌장 β세포 KATP</td><td>인슐린 분비 부족 (직접 촉진)</td><td>높음</td><td>증가</td><td>높음</td></tr>
-          <tr><th scope="row"><button type="button" data-drug="6">글리니드</button></th><td class="ing"><span class="stem">-glinide</span><span class="pi">노보넘<i>(레파글리니드)</i></span><span class="pi">파스틱<i>(나테글리니드)</i></span><span class="pi">글루패스트<i>(미티글리니드)</i></span></td><td>췌장 β세포 KATP</td><td>식사 초기 분비 부족</td><td>식후 혈당 위주</td><td>증가 가능</td><td>있음 (SU보다 짧음)</td></tr>
-          <tr><th scope="row"><button type="button" data-drug="7">TZD</button></th><td class="ing"><span class="stem">-glitazone</span><span class="pi">액토스<i>(피오글리타존)</i></span><span class="pi">듀비에<i>(로베글리타존)</i></span></td><td>지방·근육·간 (PPAR-γ)</td><td>인슐린 저항성</td><td>높음</td><td>증가</td><td>매우 낮음</td></tr>
-          <tr><th scope="row"><button type="button" data-drug="8">α-GI</button></th><td class="ing"><span class="stem nost">공통 어미 없음</span><span class="pi">글루코바이<i>(아카보스)</i></span><span class="pi">베이슨<i>(보글리보스)</i></span><span class="pi">미그보스<i>(미글리톨)</i></span></td><td>소장 점막</td><td>탄수화물이 너무 빨리 흡수됨</td><td>비교적 낮음</td><td>중립</td><td>매우 낮음</td></tr>
-          <tr><th scope="row"><button type="button" data-drug="9">인슐린</button></th><td class="ing"><span class="stem">insulin</span><span class="grp">초속효성</span><span class="pi">노보래피드<i>(아스파트)</i></span><span class="pi">휴마로그<i>(리스프로)</i></span><span class="pi">애피드라<i>(글루리신)</i></span><span class="grp">속효성·중간형</span><span class="pi">휴물린R<i>(레귤러)</i></span><span class="pi">휴물린N<i>(NPH)</i></span><span class="grp">지속형·초장시간형</span><span class="pi">란투스<i>(글라진 U100)</i></span><span class="pi">투제오<i>(글라진 U300)</i></span><span class="pi">트레시바<i>(데글루덱)</i></span></td><td>간·근육·지방</td><td>인슐린 자체가 부족함</td><td>매우 높음</td><td>증가</td><td>높음</td></tr>
+          <tr><th scope="row"><button type="button" data-drug="0">메트포르민</button></th><td class="ing"><span class="stem">-formin</span><span class="pi">다이아벡스·글루코파지<i>(메트포르민)</i></span></td><td>간</td><td>간의 포도당 과잉 생산</td><td>높음</td><td class="dose"><b>강해짐</b><small>하루 2,000 mg 정도까지 효과가 커져요</small></td><td>중립~소폭 감소</td><td>매우 낮음</td></tr>
+          <tr><th scope="row"><button type="button" data-drug="1">SGLT2 억제제</button></th><td class="ing"><span class="stem">-gliflozin</span><span class="pi">자디앙<i>(엠파글리플로진)</i></span><span class="pi">다파엔·트루다파 등<i>(다파글리플로진)</i></span><span class="pi">엔블로<i>(이나보글리플로진)</i></span></td><td>신장 근위세뇨관</td><td>포도당 재흡수 → 요당 배출</td><td>중간~높음</td><td class="dose"><b>거의 같음</b><small>자디앙 10 mg과 25 mg의 혈당 차이는 작아요. 신기능이 더 큰 변수예요</small></td><td>감소</td><td>매우 낮음</td></tr>
+          <tr><th scope="row"><button type="button" data-drug="2">DPP-4 억제제</button></th><td class="ing"><span class="stem">-gliptin</span><span class="pi">자누비아<i>(시타글립틴)</i></span><span class="pi">트라젠타<i>(리나글립틴)</i></span><span class="pi">제미글로<i>(제미글립틴)</i></span><span class="pi">테넬리아<i>(테네리글립틴)</i></span><span class="pi">가브스<i>(빌다글립틴)</i></span><span class="pi">네시나<i>(알로글립틴)</i></span><span class="pi">온글라이자<i>(삭사글립틴)</i></span><span class="pi">슈가논<i>(에보글립틴)</i></span></td><td>혈중 DPP-4 효소</td><td>인크레틴이 빨리 분해됨</td><td>중간</td><td class="dose"><b>고정 용량</b><small>자누비아 100 mg처럼 정해진 용량을 쓰고, 신기능에 따라 줄이기만 해요</small></td><td>중립</td><td>매우 낮음</td></tr>
+          <tr><th scope="row"><button type="button" data-drug="3">GLP-1 작용제</button></th><td class="ing"><span class="stem">-glutide</span><span class="pi">오젬픽·리벨서스<i>(세마글루타이드)</i></span><span class="pi">트루리시티<i>(둘라글루타이드)</i></span></td><td>췌장·뇌·위</td><td>인슐린 부족·글루카곤 과다·과식</td><td>높음~매우 높음</td><td class="dose"><b>강해짐</b><small>0.25 mg부터 단계적으로 증량해요. 같은 계열 중 세마글루타이드가 더 강한 편이에요</small></td><td>감소</td><td>매우 낮음</td></tr>
+          <tr><th scope="row"><button type="button" data-drug="4">터제파타이드</button></th><td class="ing"><span class="stem">-tide</span><span class="pi">마운자로<i>(터제파타이드)</i></span></td><td>GIP·GLP-1 수용체</td><td>인크레틴 신호를 이중으로 강화</td><td>매우 높음</td><td class="dose"><b>강해짐</b><small>5→10→15 mg에서 HbA1c −2.0→−2.2→−2.3%p (SURPASS-2)</small></td><td>크게 감소</td><td>매우 낮음</td></tr>
+          <tr><th scope="row"><button type="button" data-drug="5">설포닐우레아</button></th><td class="ing"><span class="stem">gli-</span><span class="pi">아마릴<i>(글리메피리드)</i></span><span class="pi">디아미크롱<i>(글리클라지드)</i></span><span class="pi">다이그린<i>(글리피지드)</i></span></td><td>췌장 β세포 KATP</td><td>인슐린 분비 부족 (직접 촉진)</td><td>높음</td><td class="dose"><b>저용량에서 대부분</b><small>더 올리면 효과보다 저혈당이 더 늘기 쉬워요</small></td><td>증가</td><td>높음</td></tr>
+          <tr><th scope="row"><button type="button" data-drug="6">글리니드</button></th><td class="ing"><span class="stem">-glinide</span><span class="pi">노보넘<i>(레파글리니드)</i></span><span class="pi">파스틱<i>(나테글리니드)</i></span><span class="pi">글루패스트<i>(미티글리니드)</i></span></td><td>췌장 β세포 KATP</td><td>식사 초기 분비 부족</td><td>식후 혈당 위주</td><td class="dose"><b>조금 강해짐</b><small>식사마다 용량을 조절하고, 올리면 저혈당도 함께 늘어요</small></td><td>증가 가능</td><td>있음 (SU보다 짧음)</td></tr>
+          <tr><th scope="row"><button type="button" data-drug="7">TZD</button></th><td class="ing"><span class="stem">-glitazone</span><span class="pi">액토스<i>(피오글리타존)</i></span><span class="pi">듀비에<i>(로베글리타존)</i></span></td><td>지방·근육·간 (PPAR-γ)</td><td>인슐린 저항성</td><td>높음</td><td class="dose"><b>강해짐</b><small>액토스 15→45 mg. 부종·체중 증가도 함께 늘어요</small></td><td>증가</td><td>매우 낮음</td></tr>
+          <tr><th scope="row"><button type="button" data-drug="8">α-GI</button></th><td class="ing"><span class="stem nost">공통 어미 없음</span><span class="pi">글루코바이<i>(아카보스)</i></span><span class="pi">베이슨<i>(보글리보스)</i></span><span class="pi">미그보스<i>(미글리톨)</i></span></td><td>소장 점막</td><td>탄수화물이 너무 빨리 흡수됨</td><td>비교적 낮음</td><td class="dose"><b>조금 강해짐</b><small>올리면 복부 가스·팽만도 함께 늘어요</small></td><td>중립</td><td>매우 낮음</td></tr>
+          <tr><th scope="row"><button type="button" data-drug="9">인슐린</button></th><td class="ing"><span class="stem">insulin</span><span class="grp">초속효성</span><span class="pi">노보래피드<i>(아스파트)</i></span><span class="pi">휴마로그<i>(리스프로)</i></span><span class="pi">애피드라<i>(글루리신)</i></span><span class="grp">속효성·중간형</span><span class="pi">휴물린R<i>(레귤러)</i></span><span class="pi">휴물린N<i>(NPH)</i></span><span class="grp">지속형·초장시간형</span><span class="pi">란투스<i>(글라진 U100)</i></span><span class="pi">투제오<i>(글라진 U300)</i></span><span class="pi">트레시바<i>(데글루덱)</i></span></td><td>간·근육·지방</td><td>인슐린 자체가 부족함</td><td>매우 높음</td><td class="dose"><b>상한 없음</b><small>혈당에 맞춰 계속 조절해요. 저혈당 주의</small></td><td>증가</td><td>높음</td></tr>
         </tbody>
       </table>
     </div>
-    <p class="fine">정량 비교가 아닌 임상적 상대 평가예요(문서 제2부 표). 용량·초기 HbA1c·병용약에 따라 달라지고, SU나 인슐린을 함께 쓰면 다른 계열에서도 저혈당 위험이 커질 수 있어요. 글리니드 행은 본문 서술을 기준으로 했어요. 제품은 2026년 11월 기준 국내에서 주로 쓰는 것만 적었고, 유통·공급 상태는 바뀔 수 있어요(포시가 2024년 국내 철수, 빅토자 2026년 공급 중단 결정). 성분명 어미 중 -gliflozin·-gliptin·-glutide·-glitazone은 WHO 공식 어간이고, -glinide와 gli-는 기억하기 좋은 이름 패턴일 뿐 공식 어간은 아니에요(문서 제3부). 엑세나타이드·터제파타이드처럼 -glutide로 끝나지 않는 GLP-1 계열 약도 있어요.</p>
+    <p class="fine">정량 비교가 아닌 임상적 상대 평가예요(문서 제2부 표). 용량·초기 HbA1c·병용약에 따라 달라지고, SU나 인슐린을 함께 쓰면 다른 계열에서도 저혈당 위험이 커질 수 있어요. 글리니드 행은 본문 서술을 기준으로 했어요. 당뇨약은 스타틴처럼 용량별 저·중·고강도 공식 분류가 없고(ADA 2026은 계열 단위로만 평가), 「용량을 올리면」 칸은 같은 약에서 용량을 높일 때의 일반적인 경향이에요. 제품은 2026년 11월 기준 국내에서 주로 쓰는 것만 적었고, 유통·공급 상태는 바뀔 수 있어요(포시가 2024년 국내 철수, 빅토자 2026년 공급 중단 결정). 성분명 어미 중 -gliflozin·-gliptin·-glutide·-glitazone은 WHO 공식 어간이고, -glinide와 gli-는 기억하기 좋은 이름 패턴일 뿐 공식 어간은 아니에요(문서 제3부). 엑세나타이드·터제파타이드처럼 -glutide로 끝나지 않는 GLP-1 계열 약도 있어요.</p>
   </section>
 
   <p class="foot">혈당 곡선은 건강한 성인의 전형적인 경향을 단순화한 예시이고, 약물 작용 탭의 곡선도 각 약의 방향을 보여주는 개념 예시예요. 실제 효과 크기는 환자와 용량마다 달라요. 입자 수와 호르몬 막대는 원리를 보여주기 위한 상대적 표현이에요. 내용은 「당뇨병의 병태생리」 문서(제1·5·6부)를 바탕으로 했어요. 주요 근거: ADA Standards of Care in Diabetes 2026, Endotext Glucagon Physiology, Campbell &amp; Newgard 2021(Nat Rev Mol Cell Biol), Nauck &amp; Meier 2016(Lancet Diabetes Endocrinol). 진단·치료 판단은 개별 임상 평가가 필요해요.</p>
@@ -1194,7 +1198,7 @@ const DRUGS = [
     fx:{ st:{ liver:['포도당 생산 ↓','(메트포르민)'] }, hor:H(.3,.5,.04,.1),
       flows:[['glc','liver','pool',1.2],['gcg','pancreas','liver',1.4],['glc','pool','brain',1],['glc','pool','muscle',.5],['ffa','fat','liver|muscle',1]],
       curve:[[0,128],[2,124],[4,121],[6,122],[8,126]] },
-    facts:['높음','중립~소폭 감소','매우 낮음'],
+    facts:['높음','중립~소폭 감소','매우 낮음','강해짐 (~2,000 mg)'],
     tips:[
       '<b>흔한 부작용</b>설사·오심·복부팽만이에요. 낮은 용량에서 시작해 천천히 늘리고 식사와 함께 먹으면 줄어드는 경우가 많아요. XR·SR 서방형이 위장 내약성이 더 좋을 수 있어요.',
       '<b>신기능</b>eGFR 30 미만은 금기, 30–44는 신규 시작을 권장하지 않아요. 신장을 직접 망가뜨리는 약이 아니라, 신기능이 떨어지면 축적·이상반응 위험이 커지는 거예요.',
@@ -1210,7 +1214,7 @@ const DRUGS = [
     fx:{ st:{ kidney:['요당 배출 ↑','SGLT2 차단'] }, hor:H(.5,.42,.35,.1), urine:true,
       flows:[['glc','gut','pool',3],['glc','liver','pool',1.2],['gcg','pancreas','liver',1.2],['ins','pancreas','muscle|fat|liver',1.5],['glc','pool','muscle',1],['glc','pool','brain',.9],['inc','gut','pancreas',1.2],['glc','pool','kidney',2.6]],
       curve:[[0,125],[30,172],[60,203],[90,206],[120,188],[150,170],[180,155]] },
-    facts:['중간~높음','감소','매우 낮음'],
+    facts:['중간~높음','감소','매우 낮음','거의 같음'],
     tips:[
       '<b>언제 우선할까</b>심부전, 만성콩팥병, 동맥경화성 심혈관질환이 있으면 HbA1c가 목표 범위여도 장기 보호 목적으로 고려해요. 성분마다 근거가 같지는 않아요.',
       '<b>생식기 진균감염·다뇨</b>요당이 늘어 진균이 자라기 쉬워지고, 포도당이 물을 끌고 나가 소변이 늘어요. 고령자·이뇨제 병용 땐 탈수·저혈압에 주의해요.',
@@ -1226,7 +1230,7 @@ const DRUGS = [
     fx:{ st:{ pancreas:['인슐린 ↑','글루카곤 ↓'], gut:['인크레틴 유지','(DPP-4 차단)'] }, hor:H(.68,.3,.65,.1), noDPP4:true, pools:{ rx:7 }, glut:{ muscle:.4, fat:.3 },
       flows:[['glc','gut','pool',3],['glc','liver','pool',1],['gcg','pancreas','liver',.7],['ins','pancreas','muscle|fat|liver',2.4],['glc','pool','muscle',1.3],['glc','pool','brain',.9],['inc','gut','pancreas',2.2]],
       curve:[[0,128],[30,172],[60,200],[90,203],[120,188],[150,172],[180,160]] },
-    facts:['중간','중립','매우 낮음'],
+    facts:['중간','중립','매우 낮음','고정 용량'],
     tips:[
       '<b>신기능별 용량</b>시타글립틴은 eGFR에 따라 100·50·25 mg으로 조절하지만, 리나글립틴은 보통 5 mg을 유지해요.',
       '<b>드문 부작용</b>심한 관절통, 수포성 유사천포창, 급성 췌장염 보고가 있어요.',
@@ -1242,7 +1246,7 @@ const DRUGS = [
     fx:{ st:{ pancreas:['인슐린 ↑','글루카곤 ↓'], brain:['포만감 ↑','식욕 ↓'], gut:['위 배출 지연','흡수 완만'], fat:['피하 주사','→ 혈액'] }, hor:H(.75,.22,.9,.1), glut:{ muscle:.45, fat:.35 },
       flows:[['glc','gut','pool',1.7],['glc','liver','pool',.8],['gcg','pancreas','liver',.4],['ins','pancreas','muscle|fat|liver',2.8],['glc','pool','muscle',1.5],['glc','pool','brain',.9],['inc','gut','pancreas',1]],
       curve:[[0,118],[30,148],[60,165],[90,162],[120,150],[150,140],[180,130]] },
-    facts:['높음~매우 높음','감소','매우 낮음'],
+    facts:['높음~매우 높음','감소','매우 낮음','강해짐 (단계 증량)'],
     tips:[
       '<b>위장관 증상</b>오심·구토·설사·변비가 가장 흔해요. 낮은 용량에서 단계적으로 늘려요. 구토·설사가 심하면 탈수와 급성 신손상을 확인해요.',
       '<b>주의 신호</b>담석·담낭염, 췌장염 의심 증상에 주의해요. 세마글루타이드는 혈당이 빠르게 좋아질 때 기존 망막병증이 일시 악화될 수 있어요. 갑상선 수질암·MEN2 관련 금기는 허가사항을 확인해요.',
@@ -1258,7 +1262,7 @@ const DRUGS = [
     fx:{ st:{ pancreas:['인슐린 ↑↑','글루카곤 조절'], brain:['포만감 ↑↑','식욕 ↓'], gut:['위 배출 지연','흡수 완만'], fat:['피하 주사','→ 혈액'] }, hor:H(.8,.25,.95,.1), glut:{ muscle:.5, fat:.45 },
       flows:[['glc','gut','pool',1.5],['glc','liver','pool',.7],['gcg','pancreas','liver',.5],['ins','pancreas','muscle|fat|liver',3],['glc','pool','muscle',1.6],['glc','pool','fat',.6],['glc','pool','brain',.9],['inc','gut','pancreas',1]],
       curve:[[0,112],[30,138],[60,150],[90,146],[120,136],[150,126],[180,118]] },
-    facts:['매우 높음','크게 감소','매우 낮음'],
+    facts:['매우 높음','크게 감소','매우 낮음','강해짐 (2.5→15 mg)'],
     tips:[
       '<b>부작용</b>오심·구토·설사·변비·식욕감소가 흔하고, 탈수·담낭질환·췌장염 의심 증상에 주의해요. 낮은 용량에서 시작해 단계적으로 늘려요.',
       '<b>병용 제한</b>다른 GLP-1 작용제와 중복 사용하지 않고, DPP-4 억제제 추가도 권고되지 않아요.',
@@ -1274,7 +1278,7 @@ const DRUGS = [
     fx:{ st:{ pancreas:['인슐린 ↑↑','혈당과 무관'], muscle:['GLUT4 반응 ↓','저항성은 그대로'] }, hor:H(.92,.4,.35,.1), glut:{ muscle:.5, fat:.45 },
       flows:[['glc','gut','pool',3],['glc','liver','pool',.9],['gcg','pancreas','liver',1],['ins','pancreas','muscle|fat|liver',4],['glc','pool','muscle',1.8],['glc','pool','fat',.6],['glc','pool','brain',.9],['inc','gut','pancreas',1.2]],
       curve:[[0,118],[30,160],[60,182],[90,176],[120,156],[150,134],[180,116]] },
-    facts:['높음','증가','높음'],
+    facts:['높음','증가','높음','저용량에서 대부분'],
     tips:[
       '<b>저혈당</b>식사를 거르거나, 운동량이 갑자기 늘거나, 신기능이 떨어졌거나, 고령일 때 특히 위험해요. 글리메피리드 복용자가 아침을 거른다면 반드시 안내해요.',
       '<b>체중 증가</b>지방 저장에 유리한 인슐린 환경, 저혈당 뒤 보상적으로 더 먹는 것 등이 겹쳐요. LEAD-2에서 같은 HbA1c 감소에도 리라글루타이드는 약 −2.8 kg, 글리메피리드는 약 +1.0 kg이었어요.',
@@ -1290,7 +1294,7 @@ const DRUGS = [
     fx:{ st:{ pancreas:['초기 분비 ↑','(짧게 작용)'] }, hor:H(.82,.4,.35,.1), glut:{ muscle:.45, fat:.4 },
       flows:[['glc','gut','pool',3],['glc','liver','pool',1],['gcg','pancreas','liver',1],['ins','pancreas','muscle|fat|liver',3.4],['glc','pool','muscle',1.5],['glc','pool','brain',.9],['inc','gut','pancreas',1.2]],
       curve:[[0,135],[30,165],[60,188],[90,186],[120,172],[150,160],[180,152]] },
-    facts:['식후 혈당 위주','증가 가능','있음 (SU보다 짧음)'],
+    facts:['식후 혈당 위주','증가 가능','있음 (SU보다 짧음)','조금 강해짐'],
     tips:[
       '<b>복용 원칙</b>제제에 따라 식사 직전에 먹고, 식사를 거르면 그 끼니 약도 거르도록 안내해요.',
       '<b>병용</b>SU와 작용 표적이 겹쳐 함께 쓰지 않아요.',
@@ -1305,7 +1309,7 @@ const DRUGS = [
     fx:{ st:{ fat:['PPAR-γ 활성','지방 안전 저장'], muscle:['GLUT4 반응 ↑','감수성 회복'], liver:['포도당 방출 ↓','지방 ↓'] }, hor:H(.5,.4,.35,.1), glut:{ muscle:.8, fat:.75 }, stores:{ fat:.7 }, pools:{ ffa:4 },
       flows:[['glc','gut','pool',3],['glc','liver','pool',.7],['gcg','pancreas','liver',1],['ins','pancreas','muscle|fat|liver',1.6],['glc','pool','muscle',2.4],['glc','pool','fat',1],['glc','pool','brain',.9],['ffa','pool','fat',1],['inc','gut','pancreas',1.2]],
       curve:[[0,122],[30,168],[60,192],[90,192],[120,176],[150,160],[180,146]] },
-    facts:['높음','증가','매우 낮음'],
+    facts:['높음','증가','매우 낮음','강해짐 (15→45 mg)'],
     tips:[
       '<b>핵심 부작용</b>부종·체액저류, 체중 증가, 심부전 악화예요. 증상성 심부전에서는 일반적으로 피해요.',
       '<b>확인할 신호</b>부종, 호흡곤란, 급격한 체중 증가가 나타나면 심부전 악화를 의심해요. 인슐린과 함께 쓰면 부종 위험이 더 높아져요.',
@@ -1321,7 +1325,7 @@ const DRUGS = [
     fx:{ st:{ gut:['분해 지연','흡수 천천히'] }, hor:H(.48,.42,.3,.1),
       flows:[['glc','gut','pool',1.3],['glc','liver','pool',1.2],['gcg','pancreas','liver',1.1],['ins','pancreas','muscle|fat|liver',1.4],['glc','pool','muscle',.9],['glc','pool','brain',.9],['inc','gut','pancreas',1]],
       curve:[[0,138],[30,165],[60,186],[90,196],[120,192],[150,182],[180,170]] },
-    facts:['비교적 낮음','중립','매우 낮음'],
+    facts:['비교적 낮음','중립','매우 낮음','조금 강해짐'],
     tips:[
       '<b>복용 시점</b>식사 첫 숟가락 또는 식사 직전에 먹는 제제가 많아요. 제품별 용법을 확인해요.',
       '<b>흔한 부작용</b>복부팽만·방귀·설사·복통이에요. 대장에서 탄수화물이 발효되기 때문이에요.',
@@ -1336,7 +1340,7 @@ const DRUGS = [
     fx:{ st:{ liver:['포도당 생산 ↓','(기저 인슐린)'], fat:['피하 주사','→ 혈액'], muscle:['포도당 흡수','조금 ↑'] }, hor:H(.75,.4,.04,.1), glut:{ muscle:.25 },
       flows:[['glc','liver','pool',1.2],['gcg','pancreas','liver',1.2],['glc','pool','brain',1],['glc','pool','muscle',.9],['ffa','fat','liver|muscle',.5]],
       curve:[[0,138],[2,126],[4,117],[6,112],[8,110]] },
-    facts:['매우 높음','증가','높음'],
+    facts:['매우 높음','증가','높음','상한 없음'],
     tips:[
       '<b>저혈당·체중 증가</b>가장 중요한 문제예요. 70 mg/dL 미만이면 빠르게 흡수되는 탄수화물 약 15 g을 먹고 15분 뒤 다시 재요.',
       '<b>주사 부위 순환</b>같은 곳에 반복 주사하면 지방비대증이 생겨 흡수가 불규칙해져요.',
@@ -1788,7 +1792,7 @@ function applyStep() {
     buildChartRx(st);
     $('#st-prod').innerHTML = `<b>대표 제품(성분)</b>${st.products}`;
     $('#dm-title').textContent = '복약 포인트 · ' + st.short;
-    $('#rx-facts').innerHTML = ['혈당강하', '체중', '단독 저혈당'].map((k, i) => `<div><dt>${k}</dt><dd>${st.facts[i]}</dd></div>`).join('');
+    $('#rx-facts').innerHTML = ['혈당강하', '체중', '단독 저혈당', '용량을 올리면'].map((k, i) => `<div><dt>${k}</dt><dd>${st.facts[i]}</dd></div>`).join('');
     $('#dm-list').innerHTML = st.tips.map(x => `<li>${x}</li>`).join('');
     $('#rxbar-t').textContent = c.label;
     document.querySelectorAll('#rxbar .seg button').forEach(b => b.setAttribute('aria-pressed', (b.dataset.v === '1') === state.rx ? 'true' : 'false'));

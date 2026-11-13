@@ -287,7 +287,9 @@ td.cur{background:var(--accent-soft)}
 #rxcmp td.ing{min-width:250px;max-width:330px;color:var(--ink)}
 #rxcmp .stem{display:block;width:max-content;font:600 11.5px/1.6 var(--f-mono);color:var(--rx);background:color-mix(in srgb,var(--rx) 11%,var(--surface));border-radius:6px;padding:0 7px;margin-bottom:4px}
 #rxcmp .stem.nost{font-family:var(--f-body);color:var(--ink-3);background:var(--surface-2)}
-#rxcmp td.ing small{display:block;margin-top:3px;font-size:11.5px;color:var(--ink-3);line-height:1.45}
+#rxcmp td.ing .pi{display:inline-block;white-space:nowrap;margin:0 12px 3px 0}
+#rxcmp td.ing .pi i{font-style:normal;color:var(--ink-3);margin-left:1px}
+#rxcmp td.ing .grp{display:block;font-size:11px;font-weight:600;color:var(--ink-3);margin:4px 0 1px}
 .foot{margin-top:28px;font-size:12.5px;color:var(--ink-3);max-width:80ch;line-height:1.6}
 
 @media (prefers-reduced-motion: reduce){
@@ -577,22 +579,22 @@ td.cur{background:var(--accent-soft)}
     <p>모든 당뇨약은 혈당을 낮추지만 서로 다른 고장 지점을 겨냥해요. 약 이름을 누르면 지도에서 작용을 볼 수 있어요.</p>
     <div class="tbl-wrap">
       <table id="rxcmp">
-        <thead><tr><th scope="col">약물 계열</th><th scope="col">대표 제품 <span style="font-weight:500;color:var(--ink-3)">(아래는 같은 순서의 성분명)</span></th><th scope="col">작용 부위</th><th scope="col">고치는 고장</th><th scope="col">혈당강하</th><th scope="col">체중</th><th scope="col">단독 저혈당</th></tr></thead>
+        <thead><tr><th scope="col">약물 계열</th><th scope="col">대표 제품(성분)</th><th scope="col">작용 부위</th><th scope="col">고치는 고장</th><th scope="col">혈당강하</th><th scope="col">체중</th><th scope="col">단독 저혈당</th></tr></thead>
         <tbody>
-          <tr><th scope="row"><button type="button" data-drug="0">메트포르민</button></th><td class="ing"><span class="stem">-formin</span>다이아벡스 · 글루코파지<small>metformin (두 제품 모두)</small></td><td>간</td><td>간의 포도당 과잉 생산</td><td>높음</td><td>중립~소폭 감소</td><td>매우 낮음</td></tr>
-          <tr><th scope="row"><button type="button" data-drug="1">SGLT2 억제제</button></th><td class="ing"><span class="stem">-gliflozin</span>자디앙 · 다파엔·트루다파 등 · 엔블로 · 슈글렛(과거 출시) · 스테글라트로(과거 출시)<small>empagliflozin · dapagliflozin · enavogliflozin · ipragliflozin · ertugliflozin</small></td><td>신장 근위세뇨관</td><td>포도당 재흡수 → 요당 배출</td><td>중간~높음</td><td>감소</td><td>매우 낮음</td></tr>
-          <tr><th scope="row"><button type="button" data-drug="2">DPP-4 억제제</button></th><td class="ing"><span class="stem">-gliptin</span>자누비아 · 트라젠타 · 제미글로 · 테넬리아 · 가브스 · 네시나 · 온글라이자 · 슈가논<small>sitagliptin · linagliptin · gemigliptin · teneligliptin · vildagliptin · alogliptin · saxagliptin · evogliptin</small></td><td>혈중 DPP-4 효소</td><td>인크레틴이 빨리 분해됨</td><td>중간</td><td>중립</td><td>매우 낮음</td></tr>
-          <tr><th scope="row"><button type="button" data-drug="3">GLP-1 작용제</button></th><td class="ing"><span class="stem">-glutide</span>오젬픽·리벨서스 · 트루리시티 · 빅토자 · 바이에타·바이에듀리언 · 릭수미아<small>semaglutide · dulaglutide · liraglutide · exenatide · lixisenatide</small></td><td>췌장·뇌·위</td><td>인슐린 부족·글루카곤 과다·과식</td><td>높음~매우 높음</td><td>감소</td><td>매우 낮음</td></tr>
-          <tr><th scope="row"><button type="button" data-drug="4">터제파타이드</button></th><td class="ing"><span class="stem">-tide</span>마운자로<small>tirzepatide</small></td><td>GIP·GLP-1 수용체</td><td>인크레틴 신호를 이중으로 강화</td><td>매우 높음</td><td>크게 감소</td><td>매우 낮음</td></tr>
-          <tr><th scope="row"><button type="button" data-drug="5">설포닐우레아</button></th><td class="ing"><span class="stem">gli-</span>아마릴 · 디아미크롱 · 다이그린 · 다오닐<small>glimepiride · gliclazide · glipizide · glibenclamide(glyburide)</small></td><td>췌장 β세포 KATP</td><td>인슐린 분비 부족 (직접 촉진)</td><td>높음</td><td>증가</td><td>높음</td></tr>
-          <tr><th scope="row"><button type="button" data-drug="6">글리니드</button></th><td class="ing"><span class="stem">-glinide</span>노보넘 · 파스틱 · 글루패스트<small>repaglinide · nateglinide · mitiglinide</small></td><td>췌장 β세포 KATP</td><td>식사 초기 분비 부족</td><td>식후 혈당 위주</td><td>증가 가능</td><td>있음 (SU보다 짧음)</td></tr>
-          <tr><th scope="row"><button type="button" data-drug="7">TZD</button></th><td class="ing"><span class="stem">-glitazone</span>액토스 · 듀비에<small>pioglitazone · lobeglitazone</small></td><td>지방·근육·간 (PPAR-γ)</td><td>인슐린 저항성</td><td>높음</td><td>증가</td><td>매우 낮음</td></tr>
-          <tr><th scope="row"><button type="button" data-drug="8">α-GI</button></th><td class="ing"><span class="stem nost">공통 어미 없음</span>글루코바이 · 베이슨 · 미그보스<small>acarbose · voglibose · miglitol</small></td><td>소장 점막</td><td>탄수화물이 너무 빨리 흡수됨</td><td>비교적 낮음</td><td>중립</td><td>매우 낮음</td></tr>
-          <tr><th scope="row"><button type="button" data-drug="9">인슐린</button></th><td class="ing"><span class="stem">insulin</span>초속효성 노보래피드 · 휴마로그 · 애피드라 / 속효성 휴물린R / 중간형 휴물린N / 지속형 란투스 / 초장시간형 투제오 · 트레시바<small>aspart · lispro · glulisine / regular / NPH / glargine U100 / glargine U300 · degludec</small></td><td>간·근육·지방</td><td>인슐린 자체가 부족함</td><td>매우 높음</td><td>증가</td><td>높음</td></tr>
+          <tr><th scope="row"><button type="button" data-drug="0">메트포르민</button></th><td class="ing"><span class="stem">-formin</span><span class="pi">다이아벡스·글루코파지<i>(메트포르민)</i></span></td><td>간</td><td>간의 포도당 과잉 생산</td><td>높음</td><td>중립~소폭 감소</td><td>매우 낮음</td></tr>
+          <tr><th scope="row"><button type="button" data-drug="1">SGLT2 억제제</button></th><td class="ing"><span class="stem">-gliflozin</span><span class="pi">자디앙<i>(엠파글리플로진)</i></span><span class="pi">다파엔·트루다파 등<i>(다파글리플로진)</i></span><span class="pi">엔블로<i>(이나보글리플로진)</i></span></td><td>신장 근위세뇨관</td><td>포도당 재흡수 → 요당 배출</td><td>중간~높음</td><td>감소</td><td>매우 낮음</td></tr>
+          <tr><th scope="row"><button type="button" data-drug="2">DPP-4 억제제</button></th><td class="ing"><span class="stem">-gliptin</span><span class="pi">자누비아<i>(시타글립틴)</i></span><span class="pi">트라젠타<i>(리나글립틴)</i></span><span class="pi">제미글로<i>(제미글립틴)</i></span><span class="pi">테넬리아<i>(테네리글립틴)</i></span><span class="pi">가브스<i>(빌다글립틴)</i></span><span class="pi">네시나<i>(알로글립틴)</i></span><span class="pi">온글라이자<i>(삭사글립틴)</i></span><span class="pi">슈가논<i>(에보글립틴)</i></span></td><td>혈중 DPP-4 효소</td><td>인크레틴이 빨리 분해됨</td><td>중간</td><td>중립</td><td>매우 낮음</td></tr>
+          <tr><th scope="row"><button type="button" data-drug="3">GLP-1 작용제</button></th><td class="ing"><span class="stem">-glutide</span><span class="pi">오젬픽·리벨서스<i>(세마글루타이드)</i></span><span class="pi">트루리시티<i>(둘라글루타이드)</i></span></td><td>췌장·뇌·위</td><td>인슐린 부족·글루카곤 과다·과식</td><td>높음~매우 높음</td><td>감소</td><td>매우 낮음</td></tr>
+          <tr><th scope="row"><button type="button" data-drug="4">터제파타이드</button></th><td class="ing"><span class="stem">-tide</span><span class="pi">마운자로<i>(터제파타이드)</i></span></td><td>GIP·GLP-1 수용체</td><td>인크레틴 신호를 이중으로 강화</td><td>매우 높음</td><td>크게 감소</td><td>매우 낮음</td></tr>
+          <tr><th scope="row"><button type="button" data-drug="5">설포닐우레아</button></th><td class="ing"><span class="stem">gli-</span><span class="pi">아마릴<i>(글리메피리드)</i></span><span class="pi">디아미크롱<i>(글리클라지드)</i></span><span class="pi">다이그린<i>(글리피지드)</i></span></td><td>췌장 β세포 KATP</td><td>인슐린 분비 부족 (직접 촉진)</td><td>높음</td><td>증가</td><td>높음</td></tr>
+          <tr><th scope="row"><button type="button" data-drug="6">글리니드</button></th><td class="ing"><span class="stem">-glinide</span><span class="pi">노보넘<i>(레파글리니드)</i></span><span class="pi">파스틱<i>(나테글리니드)</i></span><span class="pi">글루패스트<i>(미티글리니드)</i></span></td><td>췌장 β세포 KATP</td><td>식사 초기 분비 부족</td><td>식후 혈당 위주</td><td>증가 가능</td><td>있음 (SU보다 짧음)</td></tr>
+          <tr><th scope="row"><button type="button" data-drug="7">TZD</button></th><td class="ing"><span class="stem">-glitazone</span><span class="pi">액토스<i>(피오글리타존)</i></span><span class="pi">듀비에<i>(로베글리타존)</i></span></td><td>지방·근육·간 (PPAR-γ)</td><td>인슐린 저항성</td><td>높음</td><td>증가</td><td>매우 낮음</td></tr>
+          <tr><th scope="row"><button type="button" data-drug="8">α-GI</button></th><td class="ing"><span class="stem nost">공통 어미 없음</span><span class="pi">글루코바이<i>(아카보스)</i></span><span class="pi">베이슨<i>(보글리보스)</i></span><span class="pi">미그보스<i>(미글리톨)</i></span></td><td>소장 점막</td><td>탄수화물이 너무 빨리 흡수됨</td><td>비교적 낮음</td><td>중립</td><td>매우 낮음</td></tr>
+          <tr><th scope="row"><button type="button" data-drug="9">인슐린</button></th><td class="ing"><span class="stem">insulin</span><span class="grp">초속효성</span><span class="pi">노보래피드<i>(아스파트)</i></span><span class="pi">휴마로그<i>(리스프로)</i></span><span class="pi">애피드라<i>(글루리신)</i></span><span class="grp">속효성·중간형</span><span class="pi">휴물린R<i>(레귤러)</i></span><span class="pi">휴물린N<i>(NPH)</i></span><span class="grp">지속형·초장시간형</span><span class="pi">란투스<i>(글라진 U100)</i></span><span class="pi">투제오<i>(글라진 U300)</i></span><span class="pi">트레시바<i>(데글루덱)</i></span></td><td>간·근육·지방</td><td>인슐린 자체가 부족함</td><td>매우 높음</td><td>증가</td><td>높음</td></tr>
         </tbody>
       </table>
     </div>
-    <p class="fine">정량 비교가 아닌 임상적 상대 평가예요(문서 제2부 표). 용량·초기 HbA1c·병용약에 따라 달라지고, SU나 인슐린을 함께 쓰면 다른 계열에서도 저혈당 위험이 커질 수 있어요. 글리니드 행은 본문 서술을 기준으로 했어요. 제품명과 그 아래 영문 성분명은 같은 순서로 짝지어져 있고, 국내 유통·공급 상태는 바뀔 수 있어요(포시가는 2024년 국내 철수, 다파글리플로진 제네릭은 사용 중). 성분명 어미 중 -gliflozin·-gliptin·-glutide·-glitazone은 WHO 공식 어간이고, -glinide와 gli-는 기억하기 좋은 이름 패턴일 뿐 공식 어간은 아니에요(문서 제3부). 엑세나타이드·터제파타이드처럼 -glutide로 끝나지 않는 GLP-1 계열 약도 있어요.</p>
+    <p class="fine">정량 비교가 아닌 임상적 상대 평가예요(문서 제2부 표). 용량·초기 HbA1c·병용약에 따라 달라지고, SU나 인슐린을 함께 쓰면 다른 계열에서도 저혈당 위험이 커질 수 있어요. 글리니드 행은 본문 서술을 기준으로 했어요. 제품은 2026년 11월 기준 국내에서 주로 쓰는 것만 적었고, 유통·공급 상태는 바뀔 수 있어요(포시가 2024년 국내 철수, 빅토자 2026년 공급 중단 결정). 성분명 어미 중 -gliflozin·-gliptin·-glutide·-glitazone은 WHO 공식 어간이고, -glinide와 gli-는 기억하기 좋은 이름 패턴일 뿐 공식 어간은 아니에요(문서 제3부). 엑세나타이드·터제파타이드처럼 -glutide로 끝나지 않는 GLP-1 계열 약도 있어요.</p>
   </section>
 
   <p class="foot">혈당 곡선은 건강한 성인의 전형적인 경향을 단순화한 예시이고, 약물 작용 탭의 곡선도 각 약의 방향을 보여주는 개념 예시예요. 실제 효과 크기는 환자와 용량마다 달라요. 입자 수와 호르몬 막대는 원리를 보여주기 위한 상대적 표현이에요. 내용은 「당뇨병의 병태생리」 문서(제1·5·6부)를 바탕으로 했어요. 주요 근거: ADA Standards of Care in Diabetes 2026, Endotext Glucagon Physiology, Campbell &amp; Newgard 2021(Nat Rev Mol Cell Biol), Nauck &amp; Meier 2016(Lancet Diabetes Endocrinol). 진단·치료 판단은 개별 임상 평가가 필요해요.</p>
@@ -1184,7 +1186,7 @@ const T2 = {
 /* ---------- 약물 10종 ---------- */
 const DRUGS = [
   { short:'메트포르민', ctx:'fasting', route:'경구', tag:'간', targets:['liver'], focus:['liver'],
-    products:'메트포르민 — 다이아벡스, 글루코파지 (XR·SR 서방정 있음)',
+    products:'다이아벡스·글루코파지(메트포르민) — XR·SR 서방정 있음',
     title:'간이라는 연료공장의 과잉 생산을 줄여요',
     body:'제2형 당뇨병에서는 간의 인슐린 저항성 때문에 밤새 간이 포도당을 너무 많이 내보내요. 메트포르민은 간의 포도당 생산, 특히 포도당신생을 줄여 공복혈당을 낮춰요. 미토콘드리아 에너지 대사 변화, AMPK 관련·비관련 경로, 장에서의 작용이 함께 관여하고, AMPK 하나로 다 설명되지는 않아요. 인슐린 분비를 늘리는 약이 아니어서 단독으로는 저혈당이 거의 없어요.',
     mech:['장에서 흡수 → 간','미토콘드리아 에너지 대사 변화','포도당신생 ↓','간 포도당 방출 ↓','공복혈당 ↓'],
@@ -1200,7 +1202,7 @@ const DRUGS = [
       '<b>젖산산증</b>매우 드물지만 중증이에요. 급성 신손상·저산소증·패혈증·심한 탈수에서 위험이 커지고, 조영제 검사 때는 일시 중단 여부를 판단해요.'
     ] },
   { short:'SGLT2 억제제', ctx:'meal', route:'경구', tag:'신장', targets:['kidney'], focus:['kidney'],
-    products:'엠파글리플로진 — 자디앙 · 다파글리플로진 — 다파엔·트루다파 등 · 이나보글리플로진 — 엔블로',
+    products:'자디앙(엠파글리플로진) · 다파엔·트루다파 등(다파글리플로진) · 엔블로(이나보글리플로진)',
     title:'신장에서 포도당을 덜 회수해 소변으로 내보내요',
     body:'사구체에서 걸러진 포도당은 원래 근위세뇨관의 SGLT2가 거의 다 다시 흡수해요. SGLT2 억제제는 이 수송체를 막아 포도당이 소변으로 빠져나가게 해요(신장 아래로 나가는 육각형). 인슐린과 상관없이 작동해서 단독으로는 저혈당이 거의 없어요. 나트륨 재흡수도 줄여 사구체의 과도한 여과 압력을 완화하는데, 이것이 심부전·만성콩팥병 보호 효과와 연결돼요.',
     mech:['SGLT2 수송체 차단','포도당·Na⁺ 재흡수 ↓','요당 배출 ↑','혈당 ↓ (인슐린과 무관)'],
@@ -1216,7 +1218,7 @@ const DRUGS = [
       '<b>eGFR이 낮으면</b>혈당강하 효과는 약해지지만 심장·신장 보호 효과는 남을 수 있어요.'
     ] },
   { short:'DPP-4 억제제', ctx:'meal', route:'경구', tag:'혈중 DPP-4 효소', targets:['blood'], focus:['gut','pancreas'],
-    products:'시타글립틴 — 자누비아 · 리나글립틴 — 트라젠타 · 제미글립틴 — 제미글로 · 에보글립틴 — 슈가논',
+    products:'자누비아(시타글립틴) · 트라젠타(리나글립틴) · 제미글로(제미글립틴) · 슈가논(에보글립틴)',
     title:'인크레틴이 분해되지 않게 지켜줘요',
     body:'원래는 장에서 나온 GLP-1·GIP를 DPP-4 효소가 몇 분 만에 분해해요(약 없이 화면에서 회색 고리로 사라지는 초록 입자). DPP-4 억제제는 이 효소를 막아 몸이 스스로 만든 인크레틴이 더 오래 작용하게 해요. 그래서 혈당이 높을 때만 인슐린 분비가 늘고 글루카곤이 줄어요. 혈당 의존적이라 단독으로는 저혈당 위험이 매우 낮고, 체중은 대체로 변하지 않아요.',
     mech:['DPP-4 효소 차단','내인성 GLP-1·GIP 분해 ↓','혈당 의존적 인슐린 ↑','글루카곤 ↓'],
@@ -1232,7 +1234,7 @@ const DRUGS = [
       '<b>병용</b>메트포르민 복합제(자누메트·트라젠타듀오·제미메트)가 널리 쓰여요. GLP-1 작용제·터제파타이드와는 같은 경로라 함께 쓰지 않아요.'
     ] },
   { short:'GLP-1 작용제', ctx:'meal', route:'주사 (리벨서스는 경구)', tag:'췌장·뇌·위', targets:['pancreas','brain','gut'], focus:['pancreas','brain','gut'],
-    products:'세마글루타이드 — 오젬픽(주 1회 주사)·리벨서스(경구) · 둘라글루타이드 — 트루리시티 · 리라글루타이드 — 빅토자',
+    products:'오젬픽(세마글루타이드, 주 1회 주사) · 리벨서스(세마글루타이드, 경구) · 트루리시티(둘라글루타이드, 주 1회 주사)',
     title:'GLP-1 신호를 강하고 오래 켜줘요',
     body:'DPP-4에 잘 분해되지 않게 만든 GLP-1 유사체가 수용체를 직접 자극해요. 혈당이 높을 때 β세포의 인슐린 분비를 증폭하고, 과도한 글루카곤을 억제하고, 위 배출을 늦춰 포도당이 천천히 들어오게 해요. 뇌의 식욕·포만감 회로에도 작용해 먹는 양 자체가 줄어서 체중이 감소해요. 피하지방에 주사하면 혈액으로 천천히 들어가요(지방조직에서 나오는 캡슐).',
     mech:['GLP-1 수용체 자극','인슐린 ↑ (혈당 의존)','글루카곤 ↓','위 배출 지연','식욕 ↓'],
@@ -1248,7 +1250,7 @@ const DRUGS = [
       '<b>병용</b>SU와 함께 쓰면 저혈당을 막기 위해 SU 감량을 검토해요. DPP-4 억제제와는 함께 쓰지 않아요. 오젬픽과 위고비는 같은 성분이어도 서로 바꿔 쓰면 안 돼요.'
     ] },
   { short:'터제파타이드', ctx:'meal', route:'주사 (주 1회)', tag:'GIP·GLP-1 수용체', targets:['pancreas','brain'], focus:['pancreas','brain','gut'],
-    products:'터제파타이드 — 마운자로',
+    products:'마운자로(터제파타이드)',
     title:'두 인크레틴 수용체를 함께 자극해요',
     body:'터제파타이드는 GIP 수용체와 GLP-1 수용체를 함께 자극하는 하나의 분자예요. 두 신호가 함께 혈당 의존적 인슐린 분비를 키우고, 식욕을 줄이고, 대사를 조절해요. 그래서 혈당과 체중을 모두 크게 낮춰요. 2026년 10월에는 국내에서 확증된 심혈관질환이 있는 성인 제2형 당뇨병 환자의 주요 심혈관 사건 위험 감소 적응증이 추가됐어요.',
     mech:['GIP 수용체 + GLP-1 수용체','인슐린 분비 증폭','식욕 ↓ · 위 배출 지연','혈당·체중 크게 ↓'],
@@ -1264,7 +1266,7 @@ const DRUGS = [
       '<b>해석 주의</b>SURPASS-CVOT의 주요 비교는 둘라글루타이드 대비 비열등성이라, 심혈관 효과가 더 우월하다는 뜻은 아니에요. 제1형 당뇨병의 인슐린 대체제도 아니에요.'
     ] },
   { short:'설포닐우레아', ctx:'meal', route:'경구', tag:'췌장 β세포', targets:['pancreas'], focus:['pancreas'],
-    products:'글리메피리드 — 아마릴 · 글리클라지드 — 디아미크롱 · 글리피지드 — 다이그린',
+    products:'아마릴(글리메피리드) · 디아미크롱(글리클라지드) · 다이그린(글리피지드)',
     title:'β세포에 인슐린을 내보내라고 직접 명령해요',
     body:'SU는 β세포 KATP 통로의 SUR1에 붙어 통로를 직접 닫아요. 포도당 대사 단계를 건너뛰고 탈분극 → Ca²⁺ 유입 → 인슐린 분비가 바로 일어나요. 그래서 혈당이 이미 낮을 때도 분비가 이어질 수 있어 저혈당 위험이 있어요. 인슐린 저항성 자체를 고치지는 않고, 분비량을 늘려 밀어붙이는 방식이에요.',
     mech:['SU → SUR1 결합','KATP 통로 닫힘 (포도당 대사 건너뜀)','탈분극 → Ca²⁺','인슐린 분비 ↑ (혈당과 무관)'],
@@ -1280,7 +1282,7 @@ const DRUGS = [
       '<b>병용</b>인슐린과 함께 쓰면 SU 감량·중단을 고려하고, 글리니드와는 표적이 겹쳐 함께 쓰지 않아요.'
     ] },
   { short:'글리니드', ctx:'meal', route:'경구 (식사 직전)', tag:'췌장 β세포', targets:['pancreas'], focus:['pancreas'],
-    products:'레파글리니드 — 노보넘 · 나테글리니드 — 파스틱 · 미티글리니드 — 글루패스트',
+    products:'노보넘(레파글리니드) · 파스틱(나테글리니드) · 글루패스트(미티글리니드)',
     title:'식사 때만 짧고 빠르게 인슐린을 끌어내요',
     body:'SU처럼 β세포 KATP 통로 관련 표적에 작용하지만 작용이 더 빠르고 짧아요. 식사 직전에 먹으면 식사 초반 인슐린 분비가 앞당겨져, 제2형 당뇨병에서 약해진 초기 분비를 보완하고 식후 혈당 상승을 줄여요. 식사를 건너뛰면 그 끼니의 약도 건너뛰는 것이 원칙이에요.',
     mech:['식사 직전 복용','KATP 통로 닫힘 (짧게)','초기 인슐린 분비 ↑','식후 혈당 ↓'],
@@ -1295,7 +1297,7 @@ const DRUGS = [
       '<b>상호작용</b>레파글리니드는 겜피브로질과 중대한 상호작용이 있어 병용금기를 확인해요.'
     ] },
   { short:'TZD', ctx:'meal', route:'경구', tag:'지방·근육·간', targets:['fat','muscle','liver'], focus:['fat','muscle','liver'],
-    products:'피오글리타존 — 액토스 · 로베글리타존 — 듀비에',
+    products:'액토스(피오글리타존) · 듀비에(로베글리타존)',
     title:'인슐린 열쇠에 대한 반응을 되살려요',
     body:'TZD는 핵수용체 PPAR-γ를 활성화해 지방조직의 유전자 발현과 기능을 바꿔요. 지방산을 지방조직에 안전하게 저장하게 해서 간·근육에 쌓이던 이소성 지방과 지방독성을 줄이고, 그 결과 같은 인슐린에도 GLUT4가 더 잘 올라와요. 인슐린을 더 짜내는 약이 아니라 감수성을 높이는 약이에요. 효과가 나타나기까지 수주가 걸릴 수 있어요.',
     mech:['PPAR-γ 활성화','지방조직 기능 개선','간·근육 이소성 지방 ↓','인슐린 감수성 ↑ → GLUT4 ↑'],
@@ -1311,7 +1313,7 @@ const DRUGS = [
       '<b>쓰임</b>인슐린 저항성이 두드러지고 심부전이 없는 환자에서 고려해요. 피오글리타존은 일부 MASH 환자에서의 이점도 논의돼요.'
     ] },
   { short:'α-GI', ctx:'meal', route:'경구 (식사 첫 숟가락과 함께)', tag:'소장', targets:['gut'], focus:['gut'],
-    products:'아카보스 — 글루코바이 · 보글리보스 — 베이슨 · 미글리톨 — 미그보스',
+    products:'글루코바이(아카보스) · 베이슨(보글리보스) · 미그보스(미글리톨)',
     title:'소장에서 탄수화물 분해를 늦춰요',
     body:'소장 점막의 α-글루코시다아제를 억제해 전분·설탕 같은 탄수화물이 단당류로 쪼개지는 속도를 늦춰요. 포도당이 한꺼번에 들어오지 않고 천천히 들어오니 식후 혈당 정점이 낮아지고 늦춰져요. 장 안에서 작용하는 약이라 지도에서 혈액으로 나가는 약 입자는 없어요. 분해되지 않은 탄수화물이 대장까지 가서 세균에 발효되면서 가스가 생겨요.',
     mech:['α-글루코시다아제 억제','이당류·전분 분해 지연','포도당 흡수 느려짐','식후 혈당 정점 ↓'],
@@ -1326,7 +1328,7 @@ const DRUGS = [
       '<b>저혈당 교정</b>인슐린·SU와 함께 쓰다 저혈당이 오면 설탕(자당)이 아니라 포도당으로 교정해요. 자당은 분해되어야 흡수되는데 그 단계가 막혀 있기 때문이에요.'
     ] },
   { short:'인슐린', ctx:'fasting', route:'피하 주사', tag:'간·근육·지방', targets:['liver','fat'], focus:['liver','fat','muscle'],
-    products:'기저: 글라진 — 란투스(U100)·투제오(U300) · 데글루덱 — 트레시바 / 식사: 아스파트 — 노보래피드 · 리스프로 — 휴마로그',
+    products:'기저: 란투스(글라진 U100) · 투제오(글라진 U300) · 트레시바(데글루덱) / 식사: 노보래피드(아스파트) · 휴마로그(리스프로)',
     title:'부족한 인슐린을 바깥에서 채워요',
     body:'기저 인슐린은 하루 내내 일정하게 작용하면서, 식사하지 않는 동안 간이 포도당을 과하게 만들어 내보내지 않도록 눌러줘요. 그래서 주로 공복혈당을 낮춰요(지방조직에서 나오는 파란 열쇠). 식사 인슐린은 식후에 오르는 혈당을 맡아요. 주사한 인슐린은 혈당이 떨어져도 몸이 스스로 줄일 수 없어서, 효과에 뚜렷한 상한이 없는 대신 저혈당 위험이 있어요.',
     mech:['피하 주사','혈액으로 천천히 흡수','간 포도당 생산 ↓','근육·지방 포도당 흡수 ↑','공복혈당 ↓'],
@@ -1784,7 +1786,7 @@ function applyStep() {
     if (!state.rx) { title = c.title; body = c.body.replace('{약}', st.short); mechA = c.mech; tag = '약 없이 (제2형)'; }
     curveFn = monotone(cur.curve);
     buildChartRx(st);
-    $('#st-prod').innerHTML = `<b>대표 성분·제품</b>${st.products}`;
+    $('#st-prod').innerHTML = `<b>대표 제품(성분)</b>${st.products}`;
     $('#dm-title').textContent = '복약 포인트 · ' + st.short;
     $('#rx-facts').innerHTML = ['혈당강하', '체중', '단독 저혈당'].map((k, i) => `<div><dt>${k}</dt><dd>${st.facts[i]}</dd></div>`).join('');
     $('#dm-list').innerHTML = st.tips.map(x => `<li>${x}</li>`).join('');
